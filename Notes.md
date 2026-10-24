@@ -36,3 +36,42 @@ I started the backend for a multi-agent AI interview platform with two Express a
 ### Next learning / implementation
 
 Connect the Google-auth controller to a route, add `express.json()`, CORS and cookie middleware, then test the full token-to-user flow.
+
+## 2026-10-24 — Day 2: Auth flow, Redis sessions, and frontend start
+
+### What I built
+
+I connected the Auth Service to real Express routes: `POST /login` and `GET /logout`. I added `express.json()` so the service can read a token from a JSON request body and `cookie-parser` so it can read cookies. After Firebase token verification, the service now stores a seven-day user session in Redis. I also added Docker Compose for Redis and created the React frontend with a home page, login modal, and dashboard route.
+
+### Why Redis for sessions?
+
+MongoDB stores long-term user data, but Redis is better for temporary session data because it is in memory and supports automatic expiry with `EX`. The browser only keeps a session ID in a cookie; user details stay on the server in Redis. This is safer and makes logout simple: delete `session:<sessionId>` from Redis.
+
+### How the current login flow works
+
+1. A client will send a Firebase ID token to `POST /api/auth/login` through the gateway.
+2. The Auth Service verifies it with Firebase Admin and creates or finds the MongoDB user.
+3. A UUID session ID is generated and Redis stores the user’s essential data for seven days.
+4. The server sends the session ID as a cookie and returns the user object.
+
+The login screen and Google button are complete visually, but connecting Firebase client sign-in and the API call is the next task.
+
+### Key concepts I learned
+
+- `express.Router()` groups related endpoints and keeps `index.js` clean.
+- `express.json()` parses JSON request bodies; without it, `req.body.token` is unavailable.
+- `cookie-parser` reads incoming cookies through `req.cookies`.
+- Docker Compose makes a local dependency like Redis repeatable with `docker compose up`.
+- React Router maps URLs to page components, while `useState` controls whether the login modal is visible.
+
+### Important issue I found
+
+The current logout function is missing `req` and `res` parameters, so it will fail until it is changed to `async (req, res) => { ... }`. Cookie options should also use the exact names `httpOnly` and `sameSite`, with `secure: true` in production.
+
+### Interview explanation
+
+“I extended authentication from token verification to session management. Firebase confirms the user identity, MongoDB keeps permanent profile data, and Redis holds short-lived session data with automatic expiry. I also set up the React UI and Docker Compose so the frontend and local Redis service can be developed consistently.”
+
+### Next learning / implementation
+
+Connect the Google button to Firebase client authentication, send its ID token through the gateway, fix and test logout, and add protected dashboard access.
