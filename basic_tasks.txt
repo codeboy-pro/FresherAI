@@ -1,0 +1,9 @@
+In backend:
+     docker compose up (for redis activeness)
+      1.gateway:-  npm run dev
+      2.services: auth: 
+         - npm run dev
+      
+
+In frontend:
+         npm run dev
