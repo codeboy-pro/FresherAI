@@ -2,6 +2,7 @@ import { app } from "../configs/firebase.js";
 import { getAuth } from "firebase-admin/auth";
 import { User } from "../models/user.model.js";
 import crypto from "crypto";
+import redis from "../../../shared/redis/redis.js";
 
 export const GoogleAuth = async (req, res) =>{
     try{
@@ -17,6 +18,13 @@ export const GoogleAuth = async (req, res) =>{
         })
       }
       const sessionId=crypto.randomUUID();
+      await redis.set(`session:${sessionId}`,JSON.stringify({
+        userId:user._id,
+        name:user.name,
+        email:user.email,
+        interviewCoin:user.interviewCoin
+      }),"EX",7*24*60*60);
+
       res.cookie("session",sessionId,{
         httponly:true,
         secure:false,
@@ -28,4 +36,21 @@ export const GoogleAuth = async (req, res) =>{
        
         res.status(500).json("Goggle auth error",error);
     }
+}
+
+export const logout=async()=>{
+  try{
+      const sessionId=req.cookies?.session
+      if(sessionId){
+        await redis.del(`session:${sessionId}`)
+      }
+      res.clearCookie("session", {
+        httponly: true,
+        secure: false,
+        samesite: "strict",
+      });
+      return res.status(200).json({success:true,message:"Logged out successfully"});
+  }catch(error){
+      res.status(500).json({success:false,message:error.message});
+  }
 }
