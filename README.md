@@ -12,15 +12,18 @@ The foundation built so far includes:
 - **MongoDB + Mongoose** user persistence, including Firebase UID, profile data, interview-coin balance, and timestamps.
 - An Auth Service router with `POST /login` and `GET /logout`, plus JSON-body and cookie-parsing middleware.
 - **Redis-backed sessions** with a seven-day expiry, and Docker Compose to run Redis locally.
-- A **React + Vite + Tailwind CSS** frontend with a home page, animated login modal, and a placeholder dashboard route.
+- A full **React + Vite + Tailwind CSS** landing page with animated agent cards, feature sections, and dashboard preview.
+- Firebase client-side Google sign-in wired from the login modal to the authentication API.
+- Gateway middleware for CORS, cookies, request logging, and a protected `GET /api/me` endpoint.
+- Client-side protected routes: authenticated users reach the dashboard; other users are redirected to the home page.
 
-The frontend sign-in button is currently UI-only; Firebase client sign-in and the API request are not connected yet. Billing, interview, resume, and roadmap services are planned but not implemented.
+Billing, interview, resume, and roadmap services are planned but not implemented.
 
 ## Architecture
 
 ```text
 React client :5173
-  │  Firebase ID token (planned integration)
+  │  Firebase Google sign-in → ID token
   ▼
 API Gateway :6000
   │  /api/auth
@@ -51,7 +54,9 @@ backend/
     └── roadmap/              # Planned
 frontend/
 ├── src/pages/                # Home and dashboard routes
-└── src/components/           # Login modal
+├── src/components/           # Login modal
+├── src/apis/                 # Gateway API calls
+└── src/utils/                # Axios and Firebase configuration
 ```
 
 ## Run locally
@@ -133,19 +138,20 @@ npm run dev
 | --- | --- | --- |
 | `/api/auth/login` | `POST` | Verifies a Firebase ID token, creates/fetches a user, and stores a Redis session. |
 | `/api/auth/logout` | `GET` | Intended to delete the Redis session and clear the session cookie. |
+| `/api/me` | `GET` | Returns the user data stored in a valid Redis-backed session. |
 
-For login, send a JSON body such as `{ "token": "firebase_id_token" }`. The frontend integration is still pending.
+For login, the Firebase client obtains an ID token and sends `{ "token": "firebase_id_token" }` to the gateway.
 
 ## Known work in progress
 
 - The logout controller needs its `req` and `res` parameters added before the endpoint can work.
 - Cookie option names need correcting to `httpOnly` and `sameSite`; secure cookies should be enabled in production.
-- Add input validation and more specific authentication error responses.
-- Configure frontend Firebase sign-in, then call the gateway login endpoint with the returned ID token.
+- The frontend Axios base URL is currently `http://localhost:8000`, while the gateway defaults to port `6000`; these must match for login and session checks to succeed.
+- Add input validation, user-facing login errors, and API tests.
 
 ## Next implementation steps
 
-1. Complete the Firebase sign-in flow between the frontend and Auth Service.
+1. Align the frontend API base URL with the gateway and test the complete login flow.
 2. Fix and test logout, cookie security, validation, and error handling.
 3. Build the dashboard and interview workflow services.
 4. Add automated tests and production configuration.

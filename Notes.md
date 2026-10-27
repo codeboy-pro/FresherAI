@@ -75,3 +75,37 @@ The current logout function is missing `req` and `res` parameters, so it will fa
 ### Next learning / implementation
 
 Connect the Google button to Firebase client authentication, send its ID token through the gateway, fix and test logout, and add protected dashboard access.
+
+## 2026-10-27 — Day 3: Firebase login, session check, and protected dashboard
+
+### What I built
+
+I connected the Google login button to Firebase client authentication. After sign-in, the frontend gets a Firebase ID token and sends it to the Auth API. I added a gateway `GET /api/me` endpoint with `isAuth` middleware, so the app can read the Redis session and identify the current user. The React app now checks that endpoint on startup and protects the dashboard route.
+
+### How the session check works
+
+1. The React app starts and calls `/api/me`.
+2. The gateway reads the `session` cookie with `cookie-parser`.
+3. `isAuth` looks up `session:<id>` in Redis.
+4. If the session exists, the middleware puts the user data in `req.user`.
+5. React shows the dashboard; otherwise, React redirects the user to the home page.
+
+### Frontend learning
+
+- `signInWithPopup()` opens Google sign-in through Firebase.
+- `getIdToken()` gives the frontend a token that the backend can verify.
+- `useEffect()` restores the user session when the application loads.
+- `Navigate` in React Router prevents unauthenticated users from opening `/dashboard` directly.
+- I expanded the home page into a product landing page that explains the planned Resume, Interview, Feedback, and Roadmap agents.
+
+### Important testing point
+
+The Axios client currently points to port `8000`, but the API Gateway defaults to port `6000`. These values must match before the browser login/session requests can work. The current logout handler and cookie option names also need correction before production use.
+
+### Interview explanation
+
+“I connected Firebase Google sign-in to my backend authentication flow and added session-based route protection. Firebase provides the identity token, Redis keeps the session, the gateway validates that session, and React controls dashboard access based on the current user.”
+
+### Next learning / implementation
+
+Align the frontend API URL with the gateway, test login/logout/session expiry, then add validation, error messages, and dashboard features.
