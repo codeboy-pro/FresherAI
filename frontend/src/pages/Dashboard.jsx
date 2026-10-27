@@ -1,10 +1,7 @@
 
-
-const Dashboard = ({ user, }) => {
+const Dashboard = () => {
   return (
-    <div className="text-green-700 text-4xl">
-      Welcome {user?.name}
-    </div>
+    <div className="text-green-700 text-4xl">Dashboard page</div>
   )
 }
 
