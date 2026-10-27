@@ -12,15 +12,16 @@ The foundation built so far includes:
 - **MongoDB + Mongoose** user persistence, including Firebase UID, profile data, interview-coin balance, and timestamps.
 - An Auth Service router with `POST /login` and `GET /logout`, plus JSON-body and cookie-parsing middleware.
 - **Redis-backed sessions** with a seven-day expiry, and Docker Compose to run Redis locally.
-- A **React + Vite + Tailwind CSS** frontend with a home page, animated login modal, and a placeholder dashboard route.
+- A **React + Vite + Tailwind CSS** frontend with an animated landing page, Google sign-in, protected dashboard route, and session restoration.
+- Gateway middleware for CORS, cookies, request logging, and the protected `GET /api/me` endpoint.
 
-The frontend sign-in button is currently UI-only; Firebase client sign-in and the API request are not connected yet. Billing, interview, resume, and roadmap services are planned but not implemented.
+The frontend now uses Firebase client sign-in, sends its ID token to the gateway, and restores the user from the Redis-backed session on refresh. Billing, interview, resume, and roadmap services are planned but not implemented.
 
 ## Architecture
 
 ```text
 React client :5173
-  │  Firebase ID token (planned integration)
+  │  Firebase Google sign-in → ID token
   ▼
 API Gateway :6000
   │  /api/auth
@@ -51,7 +52,9 @@ backend/
     └── roadmap/              # Planned
 frontend/
 ├── src/pages/                # Home and dashboard routes
-└── src/components/           # Login modal
+├── src/components/           # Login modal
+├── src/apis/                 # Gateway API calls
+└── src/utils/                # Axios and Firebase configuration
 ```
 
 ## Run locally
@@ -70,6 +73,8 @@ Create `backend/gateway/.env`:
 ```env
 PORT=6000
 AUTH_SERVICE_URL=http://localhost:6001
+REDIS_URL=redis://localhost:6379
+CORS_ORIGIN=http://localhost:5173
 ```
 
 Create `backend/services/auth/.env`:
@@ -78,7 +83,10 @@ Create `backend/services/auth/.env`:
 PORT=6001
 MONGODB_URI=your_mongodb_connection_string
 REDIS_URL=redis://localhost:6379
+NODE_ENV=development
 ```
+
+Create `frontend/.env` from `frontend/.env.example`, then add your Firebase web configuration. Set `VITE_API_BASE_URL=http://localhost:6000` for local development.
 
 Place your Firebase Admin service-account file at:
 
@@ -86,7 +94,7 @@ Place your Firebase Admin service-account file at:
 backend/services/auth/serviceAccountKey.json
 ```
 
-Never commit `.env` files or the Firebase service-account key. They are excluded by `.gitignore`.
+Never commit `.env` files or the Firebase service-account key. They are excluded by `.gitignore`; the committed `.env.example` files contain placeholders only.
 
 ### 2. Start Redis
 
@@ -132,23 +140,24 @@ npm run dev
 | Public endpoint | Method | Current purpose |
 | --- | --- | --- |
 | `/api/auth/login` | `POST` | Verifies a Firebase ID token, creates/fetches a user, and stores a Redis session. |
-| `/api/auth/logout` | `GET` | Intended to delete the Redis session and clear the session cookie. |
+| `/api/auth/logout` | `GET` | Deletes the Redis session and clears the session cookie. |
+| `/api/me` | `GET` | Returns the logged-in user from the Redis session; requires a valid session cookie. |
 
-For login, send a JSON body such as `{ "token": "firebase_id_token" }`. The frontend integration is still pending.
+For login, send a JSON body such as `{ "token": "firebase_id_token" }`. The frontend obtains this token using Firebase Google sign-in.
 
-## Known work in progress
+## Security and configuration
 
-- The logout controller needs its `req` and `res` parameters added before the endpoint can work.
-- Cookie option names need correcting to `httpOnly` and `sameSite`; secure cookies should be enabled in production.
-- Add input validation and more specific authentication error responses.
-- Configure frontend Firebase sign-in, then call the gateway login endpoint with the returned ID token.
+- The session cookie is HTTP-only and uses `sameSite: "strict"`; it automatically enables `secure` when `NODE_ENV=production`.
+- MongoDB, Redis, service-account credentials, API URLs, CORS origins, and Firebase web configuration are loaded from environment files rather than committed source code.
+- Firebase web configuration is not a server secret, but keeping it in `.env` makes each environment explicit. Firebase security must still be enforced with Authentication settings and Firestore/Storage rules.
+- Add rate limiting, schema validation, CSRF protection if cross-site cookies are ever needed, and automated API tests before production.
 
 ## Next implementation steps
 
-1. Complete the Firebase sign-in flow between the frontend and Auth Service.
-2. Fix and test logout, cookie security, validation, and error handling.
-3. Build the dashboard and interview workflow services.
-4. Add automated tests and production configuration.
+1. Add logout UI and test the login, logout, and session-expiry paths.
+2. Build the dashboard and interview workflow services.
+3. Add rate limiting, validation, and automated tests.
+4. Prepare production environment configuration and deployment.
 
 ## Tech used so far
 

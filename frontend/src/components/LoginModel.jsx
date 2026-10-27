@@ -1,10 +1,23 @@
-
 import { motion } from "motion/react";
 import { FiX } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 import { GiArtificialHive } from "react-icons/gi";
+import { signInWithPopup } from "firebase/auth";
+import { auth, provider } from "../utils/firebase";
+import api from "../utils/axios";
 
-const LoginModel = ({ onClose }) => {
+const LoginModel = ({ onClose, setUser }) => {
+  const handleGoogleAuth = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const token = await result.user.getIdToken();
+      const response = await api.post("/api/auth/login", { token });
+      setUser(response?.data?.user);
+      onClose();
+    } catch (err) {
+      console.log(err);
+    }
+  };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 px-4 py-6 backdrop-blur-md sm:px-6">
       {/* Background overlay */}
@@ -17,7 +30,6 @@ const LoginModel = ({ onClose }) => {
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-white/80 bg-white/95 p-7 shadow-2xl shadow-indigo-900/15 sm:p-10"
       >
-       
         {/* Close button */}
         <motion.button
           type="button"
@@ -59,6 +71,7 @@ const LoginModel = ({ onClose }) => {
             type="button"
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.98 }}
+            onClick={handleGoogleAuth}
             className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:border-indigo-300 hover:bg-indigo-50/50 hover:shadow-md sm:text-base"
           >
             <FcGoogle className="text-xl" />

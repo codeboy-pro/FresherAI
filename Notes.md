@@ -75,3 +75,36 @@ The current logout function is missing `req` and `res` parameters, so it will fa
 ### Next learning / implementation
 
 Connect the Google button to Firebase client authentication, send its ID token through the gateway, fix and test logout, and add protected dashboard access.
+
+## 2026-10-27 — Day 3: End-to-end login and protected user session
+
+### What I built
+
+I connected the Google login button to Firebase client authentication. After Google sign-in, the React app obtains a Firebase ID token and sends it to the API Gateway. The Auth Service verifies it, stores a Redis session, and the browser receives an HTTP-only session cookie. I also added `GET /api/me` at the gateway, which reads the session from Redis and lets the frontend restore the user after refresh. The dashboard route now redirects unauthenticated users to the home page.
+
+### Why use both a Firebase token and a session cookie?
+
+The Firebase ID token proves the user’s identity at login. After that, the app uses a short server-managed session ID in an HTTP-only cookie, so JavaScript cannot read the session value. Redis supplies quick session lookup and automatic expiry, while React uses `/api/me` to determine whether a user is logged in.
+
+### How the protected-route flow works
+
+1. `App.jsx` calls `/api/me` when the app starts.
+2. The gateway checks the `session` cookie in `isAuth` middleware.
+3. The middleware loads `session:<id>` from Redis and attaches the parsed user to `req.user`.
+4. The controller returns the user; React allows `/dashboard` only when that user exists.
+5. If no valid session exists, React redirects to `/`.
+
+### Security and configuration work
+
+- Fixed logout by accepting `req` and `res`, then deleting the Redis session and clearing the cookie.
+- Corrected cookie options to `httpOnly` and `sameSite`; `secure` now turns on automatically in production.
+- Added `.env.example` templates and moved frontend API/Firebase configuration and gateway CORS configuration out of source code.
+- Confirmed that `.env` files and `serviceAccountKey.json` are ignored by Git. No private key, database connection string, or access token is tracked.
+
+### Interview explanation
+
+“I completed an end-to-end authentication flow: Firebase handles Google identity, the backend verifies the token, Redis manages the server-side session, and an HTTP-only cookie identifies the browser. I protected the dashboard by checking the current session through a gateway endpoint, and I separated environment-specific configuration from source code so secrets are not pushed to GitHub.”
+
+### Next learning / implementation
+
+Add a logout button, test session expiry and invalid tokens, then introduce request validation, rate limiting, and the real interview workflow.
