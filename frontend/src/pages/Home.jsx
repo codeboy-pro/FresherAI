@@ -80,7 +80,7 @@ const Home = ({ setUser }) => {
           onClick={() => setShowLogin(true)}
           whileHover={{ scale: 1.04, y: -2 }}
           whileTap={{ scale: 0.97 }}
-          className="group inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-200/60 transition-colors duration-300 hover:bg-indigo-700 sm:px-6 sm:py-3 sm:text-base"
+          className="group inline-flex cursor-pointer items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-200/60 transition-colors duration-300 hover:bg-indigo-700 sm:px-6 sm:py-3 sm:text-base"
         >
           Login
           <FaArrowRight className="text-xs transition-transform duration-300 group-hover:translate-x-1" />
@@ -162,7 +162,7 @@ const Home = ({ setUser }) => {
                 onClick={() => setShowLogin(true)}
                 whileHover={{ y: -3 }}
                 whileTap={{ scale: 0.97 }}
-                className="group inline-flex items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-7 py-4 text-base font-bold text-white shadow-xl shadow-indigo-200/70 transition hover:shadow-indigo-300/70"
+                className="group inline-flex cursor-pointer items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-7 py-4 text-base font-bold text-white shadow-xl shadow-indigo-200/70 transition hover:shadow-indigo-300/70"
               >
                 Get Started For Free
                 <FaArrowRight className="text-sm transition-transform group-hover:translate-x-1" />
@@ -378,7 +378,7 @@ const Home = ({ setUser }) => {
               onClick={() => setShowLogin(true)}
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.97 }}
-              className="mt-7 inline-flex items-center gap-3 rounded-xl bg-indigo-600 px-6 py-3.5 font-bold text-white shadow-lg shadow-indigo-200/70 transition hover:bg-indigo-700"
+              className="mt-7 inline-flex cursor-pointer items-center gap-3 rounded-xl bg-indigo-600 px-6 py-3.5 font-bold text-white shadow-lg shadow-indigo-200/70 transition hover:bg-indigo-700"
             >
               Start Your Journey
               <FaArrowRight className="text-sm" />

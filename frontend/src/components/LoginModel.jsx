@@ -37,7 +37,7 @@ const LoginModel = ({ onClose, setUser }) => {
           whileHover={{ rotate: 90 }}
           whileTap={{ scale: 0.92 }}
           aria-label="Close login modal"
-          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-red-50 hover:text-red-500"
+          className="absolute right-5 top-5 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-red-50 hover:text-red-500"
         >
           <FiX className="text-xl" />
         </motion.button>
@@ -72,7 +72,7 @@ const LoginModel = ({ onClose, setUser }) => {
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleGoogleAuth}
-            className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:border-indigo-300 hover:bg-indigo-50/50 hover:shadow-md sm:text-base"
+            className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:border-indigo-300 hover:bg-indigo-50/50 hover:shadow-md sm:text-base"
           >
             <FcGoogle className="text-xl" />
             <span>Continue with Google</span>

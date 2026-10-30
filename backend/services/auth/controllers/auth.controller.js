@@ -43,7 +43,7 @@ export const GoogleAuth = async (req, res) => {
     }
 };
 
-export const logout = async () => {
+export const logout = async (req,res) => {
   try {
     const sessionId = req.cookies?.session;
     if (sessionId) {

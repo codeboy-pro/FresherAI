@@ -25,6 +25,10 @@ body {
     'Segoe UI', sans-serif;
 }
 
+button {
+  cursor: pointer;
+}
+
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
