@@ -1,3 +1,4 @@
+
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiFileText,
@@ -55,7 +56,8 @@ const Sidebar = ({
   // Reusable sidebar content
   const renderSidebarContent = (expanded, isMobile = false) => (
     <div className="flex h-full w-full flex-col bg-white">
-      {/* ================= HEADER ================= */}
+
+      {/* HEADER */}
       <div
         className={`relative flex h-[76px] shrink-0 items-center border-b border-slate-200/80 px-4 ${
           expanded ? "justify-between" : "justify-center"
@@ -89,7 +91,7 @@ const Sidebar = ({
             )}
           </AnimatePresence>
 
-          {/* Collapsed desktop toggle - visible only on hover */}
+          {/* Collapsed desktop toggle */}
           {!expanded && !isMobile && (
             <motion.button
               type="button"
@@ -132,7 +134,7 @@ const Sidebar = ({
         )}
       </div>
 
-      {/* ================= CREATE INTERVIEW ================= */}
+      {/* CREATE INTERVIEW */}
       <div className="px-3 pb-5 pt-5">
         <motion.button
           type="button"
@@ -160,7 +162,7 @@ const Sidebar = ({
         </motion.button>
       </div>
 
-      {/* ================= NAVIGATION ================= */}
+      {/* NAVIGATION */}
       <div className="flex-1 overflow-y-auto px-3">
         <AnimatePresence>
           {expanded && (
@@ -201,7 +203,9 @@ const Sidebar = ({
                 {active && (
                   <motion.div
                     layoutId={
-                      isMobile ? "mobile-active-nav" : "desktop-active-nav"
+                      isMobile
+                        ? "mobile-active-nav"
+                        : "desktop-active-nav"
                     }
                     className="absolute bottom-2 left-0 top-2 w-1 rounded-r-full bg-indigo-600"
                   />
@@ -236,15 +240,18 @@ const Sidebar = ({
         </nav>
       </div>
 
-      {/* ================= BOTTOM SECTION ================= */}
+      {/* BOTTOM SECTION */}
       <div className="mt-auto shrink-0 border-t border-slate-200/80 p-3">
-        {/* Interview Coins */}
+
+        {/* INTERVIEW COINS */}
         <motion.div
           onClick={() => navigate("/pricing")}
           whileHover={{ y: -2 }}
           whileTap={{ scale: 0.98 }}
           title={
-            !expanded ? `Interview Coins: ${user?.interviewCoin ?? 0}` : ""
+            !expanded
+              ? `Interview Coins: ${user?.interviewCoin ?? 0}`
+              : ""
           }
           className={`mb-4 flex cursor-pointer items-center rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/80 to-violet-50/80 p-3 transition hover:border-indigo-200 hover:shadow-md hover:shadow-indigo-100/60 ${
             expanded ? "gap-3" : "justify-center"
@@ -280,7 +287,7 @@ const Sidebar = ({
           )}
         </motion.div>
 
-        {/* User Profile */}
+        {/* USER PROFILE */}
         <div
           className={`flex items-center ${
             expanded ? "gap-3" : "justify-center"
@@ -328,7 +335,7 @@ const Sidebar = ({
 
   return (
     <>
-      {/* ================= DESKTOP SIDEBAR ================= */}
+      {/* DESKTOP SIDEBAR */}
       <motion.aside
         initial={false}
         animate={{ width: sidebarOpen ? 312 : 88 }}
@@ -338,7 +345,7 @@ const Sidebar = ({
         {renderSidebarContent(sidebarOpen)}
       </motion.aside>
 
-      {/* ================= MOBILE MENU BUTTON ================= */}
+      {/* MOBILE MENU BUTTON */}
       <motion.button
         type="button"
         whileTap={{ scale: 0.92 }}
@@ -349,20 +356,21 @@ const Sidebar = ({
         <FiMenu className="text-xl" />
       </motion.button>
 
-      {/* ================= MOBILE SIDEBAR ================= */}
+      {/* MOBILE SIDEBAR AND GLASS BACKDROP */}
       <AnimatePresence>
         {mobileOpen && (
           <>
-            {/* Backdrop */}
+            {/* Glass backdrop: click anywhere outside to close */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
               onClick={() => setMobileOpen(false)}
-              className="fixed inset-0 z-50 bg-slate-900/30 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-50 cursor-pointer bg-slate-900/25 backdrop-blur-md md:hidden"
             />
 
-            {/* Drawer */}
+            {/* Mobile drawer */}
             <motion.aside
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
