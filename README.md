@@ -16,6 +16,8 @@ The foundation built so far includes:
 - Firebase client-side Google sign-in wired from the login modal to the authentication API.
 - Gateway middleware for CORS, cookies, request logging, and a protected `GET /api/me` endpoint.
 - Client-side protected routes: authenticated users reach the dashboard; other users are redirected to the home page.
+- A responsive dashboard shell with expandable desktop navigation, a mobile drawer, user details, interview-coin display, and logout UI.
+- A dedicated **Resume Service** that accepts PDFs, extracts text, analyses the resume with a Groq/LangChain agent, stores the result in MongoDB, and caches it in Redis.
 
 Billing, interview, resume, and roadmap services are planned but not implemented.
 
@@ -32,6 +34,17 @@ Auth Service :6001 ──► Firebase Admin (verify token)
   │                         │
   ├─────────────────────────┴──► MongoDB (users)
   └────────────────────────────► Redis (sessions)
+
+Client
+  │  /api/resume (authenticated)
+  ▼
+API Gateway ──► Resume Service :8003
+                    │       │
+                    ▼       ▼
+               MongoDB    Redis cache
+                    │
+                    ▼
+          PDF text extraction → Groq/LangChain resume agent
 ```
 
 Keeping the gateway separate gives clients one entry point and keeps authentication logic isolated. Additional services can later be connected through the gateway in the same way.
@@ -50,7 +63,11 @@ backend/
     │   └── models/           # Mongoose user schema
     ├── billing/              # Planned
     ├── interview/            # Planned
-    ├── resume/               # Planned
+    ├── resume/               # PDF upload and AI resume analysis
+    │   ├── agents/           # LLM-based ATS resume analysis
+    │   ├── controllers/      # Upload and retrieval logic
+    │   ├── middleware/       # PDF upload validation
+    │   └── models/           # Resume analysis schema
     └── roadmap/              # Planned
 frontend/
 ├── src/pages/                # Home and dashboard routes
@@ -75,6 +92,7 @@ Create `backend/gateway/.env`:
 ```env
 PORT=6000
 AUTH_SERVICE_URL=http://localhost:6001
+RESUME_SERVICE_URL=http://localhost:8003
 ```
 
 Create `backend/services/auth/.env`:
@@ -83,6 +101,15 @@ Create `backend/services/auth/.env`:
 PORT=6001
 MONGODB_URI=your_mongodb_connection_string
 REDIS_URL=redis://localhost:6379
+```
+
+Create `backend/services/resume/.env`:
+
+```env
+PORT=8003
+MONGODB_URI=your_mongodb_connection_string
+REDIS_URL=redis://localhost:6379
+GROQ_API_KEY=your_groq_api_key
 ```
 
 Place your Firebase Admin service-account file at:
@@ -126,6 +153,14 @@ npm install
 npm run dev
 ```
 
+Start the Resume Service in another terminal when working on resume analysis:
+
+```bash
+cd backend/services/resume
+npm install
+npm run dev
+```
+
 ### Current health checks
 
 - `GET http://localhost:6000/` → API gateway response
@@ -139,8 +174,12 @@ npm run dev
 | `/api/auth/login` | `POST` | Verifies a Firebase ID token, creates/fetches a user, and stores a Redis session. |
 | `/api/auth/logout` | `GET` | Intended to delete the Redis session and clear the session cookie. |
 | `/api/me` | `GET` | Returns the user data stored in a valid Redis-backed session. |
+| `/api/resume/upload` | `POST` | Authenticated PDF upload. The gateway forwards the user ID to the Resume Service for analysis and storage. |
+| `/api/resume/get-resume` | `GET` | Authenticated retrieval of the user’s resume analysis, preferring Redis cache before MongoDB. |
 
 For login, the Firebase client obtains an ID token and sends `{ "token": "firebase_id_token" }` to the gateway.
+
+For resume upload, send `multipart/form-data` using the field name `resume`.
 
 ## Known work in progress
 
@@ -148,14 +187,16 @@ For login, the Firebase client obtains an ID token and sends `{ "token": "fireba
 - Cookie option names need correcting to `httpOnly` and `sameSite`; secure cookies should be enabled in production.
 - The frontend Axios base URL is currently `http://localhost:8000`, while the gateway defaults to port `6000`; these must match for login and session checks to succeed.
 - Add input validation, user-facing login errors, and API tests.
+- Dashboard navigation includes Resume Builder, Resume Scorer, and Roadmap Builder links, but their routed pages are not implemented yet.
+- The resume-analysis response must be valid JSON before it can be stored; add robust schema validation and error handling around the LLM response.
 
 ## Next implementation steps
 
-1. Align the frontend API base URL with the gateway and test the complete login flow.
-2. Fix and test logout, cookie security, validation, and error handling.
-3. Build the dashboard and interview workflow services.
-4. Add automated tests and production configuration.
+1. Connect the Resume Scorer UI to the Resume Service upload and result endpoints.
+2. Align the frontend API base URL with the gateway and test login, logout, and session expiry.
+3. Add validation/error handling for PDF extraction and LLM JSON responses.
+4. Build the interview and roadmap workflows, then add automated tests.
 
 ## Tech used so far
 
-React, Vite, Tailwind CSS, Motion, React Router, Node.js, Express, MongoDB, Mongoose, Redis, Docker Compose, Firebase Admin SDK, dotenv, nodemon, and `express-http-proxy`.
+React, Vite, Tailwind CSS, Motion, React Router, Node.js, Express, MongoDB, Mongoose, Redis, Docker Compose, Firebase Admin SDK, Multer, pdf-parse, LangChain, Groq, dotenv, nodemon, and `express-http-proxy`.

@@ -109,3 +109,42 @@ The Axios client currently points to port `8000`, but the API Gateway defaults t
 ### Next learning / implementation
 
 Align the frontend API URL with the gateway, test login/logout/session expiry, then add validation, error messages, and dashboard features.
+
+## 2026-11-01 — Day 4: Dashboard shell and AI Resume Scorer backend
+
+### What I built
+
+I built the first dashboard layout with a responsive sidebar, user profile details, interview-coin display, navigation items, and a logout action. I also created a separate Resume Service that accepts a resume PDF, extracts its text, asks an LLM to perform ATS-style analysis, stores the result in MongoDB, and caches it in Redis.
+
+### Why a separate Resume Service?
+
+Resume processing includes file upload, PDF parsing, AI analysis, database storage, and caching. Keeping it separate from authentication gives each service one responsibility and lets the gateway route authenticated resume requests safely.
+
+### How the resume-analysis flow works
+
+1. The user sends a PDF in `multipart/form-data` with the field name `resume`.
+2. The API Gateway checks the Redis session with `isAuth` middleware.
+3. `proxyWithHeaders` forwards the request to the Resume Service and adds the authenticated user ID as `x-user-id`.
+4. Multer accepts PDF files up to 20 MB, and `pdf-parse` extracts their text.
+5. The LangChain/Groq agent returns structured ATS feedback: score, skills, strengths, weaknesses, missing skills, suggested role, and recommendations.
+6. The service creates or updates one MongoDB resume record per user, caches it in Redis, and deletes the temporary uploaded file.
+
+### Key concepts I learned
+
+- **Multer** handles `multipart/form-data` and file-size/type validation in Express.
+- An **LLM agent** can be instructed to return a fixed JSON structure that maps directly to a Mongoose schema.
+- **Upsert-style logic** keeps one current resume analysis for each user instead of creating duplicates.
+- The gateway should derive the user ID from the authenticated session, rather than trusting an ID supplied by the browser.
+- A responsive sidebar uses shared UI state for expanded desktop navigation and a separate mobile drawer.
+
+### Important testing points
+
+The Resume Scorer UI and its routes still need to be connected to the Resume Service. The LLM response should be validated before `JSON.parse()`, and the frontend API base URL must match the gateway port before browser requests work.
+
+### Interview explanation
+
+“I created an authenticated AI resume-analysis pipeline. The gateway validates the session and injects the user ID for the Resume Service. That service extracts text from an uploaded PDF, sends it to an LLM with a structured ATS prompt, stores the analysis in MongoDB, and caches it in Redis for faster retrieval.”
+
+### Next learning / implementation
+
+Build the Resume Scorer page, connect PDF upload and analysis results, add schema validation for the LLM output, and test the complete authenticated flow.
