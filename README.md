@@ -18,6 +18,8 @@ The foundation built so far includes:
 - Client-side protected routes: authenticated users reach the dashboard; other users are redirected to the home page.
 - A responsive dashboard shell with expandable desktop navigation, a mobile drawer, user details, interview-coin display, and logout UI.
 - A dedicated **Resume Service** that accepts PDFs, extracts text, analyses the resume with a Groq/LangChain agent, stores the result in MongoDB, and caches it in Redis.
+- A protected **Resume Scorer** page at `/scorer` with PDF selection, client-side size feedback, loading state, and authenticated upload to the Resume Service.
+- Structured AI resume output: the backend requests JSON, safely extracts/parses it, normalizes fields, and saves nested education, project, and experience data.
 
 Billing, interview, resume, and roadmap services are planned but not implemented.
 
@@ -187,15 +189,16 @@ For resume upload, send `multipart/form-data` using the field name `resume`.
 - Cookie option names need correcting to `httpOnly` and `sameSite`; secure cookies should be enabled in production.
 - The frontend Axios base URL is currently `http://localhost:8000`, while the gateway defaults to port `6000`; these must match for login and session checks to succeed.
 - Add input validation, user-facing login errors, and API tests.
-- Dashboard navigation includes Resume Builder, Resume Scorer, and Roadmap Builder links, but their routed pages are not implemented yet.
-- The resume-analysis response must be valid JSON before it can be stored; add robust schema validation and error handling around the LLM response.
+- Dashboard navigation includes Resume Builder, Resume Scorer, and Roadmap Builder links; the Resume Scorer route is implemented, while the other routed pages are still pending.
+- The Resume Scorer upload page is available, but the analysis result screen still needs to display the score, extracted profile, skill gaps, and recommendations.
+- Resume analysis now parses and normalizes LLM JSON; add formal schema validation and automated tests for malformed model responses.
 
 ## Next implementation steps
 
-1. Connect the Resume Scorer UI to the Resume Service upload and result endpoints.
-2. Align the frontend API base URL with the gateway and test login, logout, and session expiry.
-3. Add validation/error handling for PDF extraction and LLM JSON responses.
-4. Build the interview and roadmap workflows, then add automated tests.
+1. Display resume-analysis results in the Resume Scorer after upload.
+2. Align the frontend API base URL with the gateway and test login, logout, upload, and session expiry.
+3. Add formal response validation and automated tests for PDF extraction and LLM output.
+4. Build the Resume Builder, interview, and roadmap workflows.
 
 ## Tech used so far
 

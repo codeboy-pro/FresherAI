@@ -74,6 +74,7 @@ const Scorer = ({ user, setUser }) => {
   const uploadResume = async () => {
     if (!file) {
       alert("Please select a PDF");
+      return;
     }
 
     try {
@@ -91,8 +92,8 @@ const Scorer = ({ user, setUser }) => {
 
       setLoading(false);
     } catch (error) {
-      console.log(error);
-      alert("Error uploading resume");
+      console.error("Resume upload failed:", error);
+      alert(error.response?.data?.message || "Error uploading resume");
       setLoading(false);
     }
   };

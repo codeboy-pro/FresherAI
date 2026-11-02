@@ -1,5 +1,37 @@
 import mongoose from "mongoose";
 
+const educationSchema = new mongoose.Schema(
+  {
+    institution: { type: String, default: "" },
+    degree: { type: String, default: "" },
+    duration: { type: String, default: "" },
+    gpa: { type: String, default: "" },
+    honors: { type: String, default: "" },
+    relevantCoursework: { type: [String], default: [] },
+  },
+  { _id: false },
+);
+
+const projectSchema = new mongoose.Schema(
+  {
+    name: { type: String, default: "" },
+    duration: { type: String, default: "" },
+    description: { type: String, default: "" },
+  },
+  { _id: false },
+);
+
+const experienceSchema = new mongoose.Schema(
+  {
+    company: { type: String, default: "" },
+    location: { type: String, default: "" },
+    role: { type: String, default: "" },
+    duration: { type: String, default: "" },
+    responsibilities: { type: [String], default: [] },
+  },
+  { _id: false },
+);
+
 const resumeSchema = new mongoose.Schema(
   {
     userId: {
@@ -33,45 +65,44 @@ const resumeSchema = new mongoose.Schema(
       default: "",
     },
     education: {
-      type: [String],
+      type: [educationSchema],
       default: [],
     },
     skills: {
       type: [String],
       default: [],
     },
-    projects:{
-        type: [String],
-        default: [],
+    projects: {
+      type: [projectSchema],
+      default: [],
     },
-    experience:{
-        type: [String],
-        default: [],
+    experience: {
+      type: [experienceSchema],
+      default: [],
     },
-    strengths:{
-        type: [String],
-        default: [],
+    strengths: {
+      type: [String],
+      default: [],
     },
-    weaknesses:{
-        type: [String],
-        default: [],
+    weaknesses: {
+      type: [String],
+      default: [],
     },
-   missingSkills:{
-        type: [String],
-        default: [],
+    missingSkills: {
+      type: [String],
+      default: [],
     },
-    suggestedRole:{
-        type: String,
-        default: "",
+    suggestedRole: {
+      type: String,
+      default: "",
     },
-    recommendations:{
-        type: [String],
-        default: [],
-    }
+    recommendations: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true },
 );
-
 
 const Resume = mongoose.model("Resume", resumeSchema);
 

@@ -148,3 +148,39 @@ The Resume Scorer UI and its routes still need to be connected to the Resume Ser
 ### Next learning / implementation
 
 Build the Resume Scorer page, connect PDF upload and analysis results, add schema validation for the LLM output, and test the complete authenticated flow.
+
+## 2026-11-03 — Day 5: Resume Scorer upload flow and reliable AI output
+
+### What I built
+
+I added the protected `/scorer` page and connected it to the Resume Service. A user can select a PDF resume, see its name and size, remove it if needed, and submit it with `FormData`. The page shows an analysis loading state while the backend processes the document.
+
+I also improved the resume-analysis backend. The gateway proxy now uses the correct request-options hook to pass the authenticated `x-user-id` header. The LLM is instructed to return JSON with object arrays for education, projects, and experience. The service removes Markdown code fences if present, extracts the JSON object, parses it, and normalizes fields before MongoDB storage.
+
+### Why normalize LLM output?
+
+AI output can vary even with a detailed prompt. Normalization converts missing values, strings, and arrays into the data shapes expected by the Mongoose schema. This prevents a malformed response from breaking persistence and gives the frontend predictable fields to render.
+
+### How the upload flow works
+
+1. The protected `/scorer` route renders the upload page for an authenticated user.
+2. The browser sends the selected PDF as `multipart/form-data` under the `resume` field.
+3. The gateway validates the session and forwards the request with the server-derived user ID.
+4. The Resume Service extracts PDF text, calls the Groq/LangChain agent, parses and normalizes the JSON response, then saves it in MongoDB and Redis.
+5. The frontend receives the processed resume data; the next UI step is to display the analysis report.
+
+### Key concepts I learned
+
+- `FormData` sends files without manually setting the multipart boundary.
+- A proxy decorator can inject trusted server-side identity headers into downstream service requests.
+- Prompt constraints and JSON response format reduce LLM output variability.
+- Nested Mongoose schemas model structured data such as education, projects, and work experience more clearly than string arrays.
+- Defensive parsing should remove Markdown fences, locate the JSON object, and fail with a clear error when output is invalid.
+
+### Interview explanation
+
+“I built the Resume Scorer upload flow and made the AI pipeline more reliable. The browser uploads a PDF through an authenticated gateway, the backend extracts text and requests structured ATS feedback from an LLM, then normalizes that response into nested MongoDB schemas and caches it in Redis. This makes the result safer and easier for the frontend to display.”
+
+### Next learning / implementation
+
+Build the analysis-result screen for ATS score, strengths, missing skills, and recommendations; then add schema validation and end-to-end tests for invalid files and malformed AI responses.
