@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import { useEffect, useState } from "react";
 import { getCurrentUser } from "./apis/user.api.js";
+import Scorer from "./pages/Scorer.jsx";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -34,15 +35,36 @@ const App = () => {
   return (
     <>
       <Routes>
-        <Route path="/" element={
-          user?
-          <Navigate to="/dashboard" replace/> :
-          <Home setUser={setUser} />} />
-        <Route path="/dashboard" element={
-          user?
-          <Dashboard user={user} setUser={setUser} />: 
-          <Navigate to="/" replace/>
-          } />
+        <Route
+          path="/"
+          element={
+            user ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Home setUser={setUser} />
+            )
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            user ? (
+              <Dashboard user={user} setUser={setUser} />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/scorer"
+          element={
+            user ? (
+              <Scorer user={user} setUser={setUser} />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
       </Routes>
     </>
   );
