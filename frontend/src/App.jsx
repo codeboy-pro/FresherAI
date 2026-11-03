@@ -25,16 +25,23 @@ const App = () => {
     getuser();
   }, []);
 
+  useEffect(() => {
+    let active = true;
 
-    useEffect(() => {
-      const getResumeData=async()=>{
-  const result=await getresume();
-  dispatch(setResume(result?.data));
-      }
-      getResumeData();
-    }, []);
+    dispatch(setResume(null));
 
+    if (user) {
+      getresume().then((result) => {
+        if (active) {
+          dispatch(setResume(result?.data || null));
+        }
+      });
+    }
 
+    return () => {
+      active = false;
+    };
+  }, [dispatch, user]);
 
   if (loading) {
     return (
