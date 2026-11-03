@@ -184,3 +184,38 @@ AI output can vary even with a detailed prompt. Normalization converts missing v
 ### Next learning / implementation
 
 Build the analysis-result screen for ATS score, strengths, missing skills, and recommendations; then add schema validation and end-to-end tests for invalid files and malformed AI responses.
+
+## 2026-11-03 — Day 6: Resume analysis report and re-upload workflow
+
+### What I built
+
+I completed the Resume Scorer result experience. After the backend returns an analysis, the page renders an ATS-style report instead of leaving the user on the upload screen. It presents the overall score along with the structured resume information returned by the service, including strengths, skill gaps, and recommendations.
+
+I also added a re-upload flow. Selecting **Re-upload Resume** now switches the page back to the PDF upload view while preserving the existing analysis in application state. When the new PDF has finished processing, the Redux resume state is replaced with the new result and the report view returns automatically.
+
+### Why keep the current result while re-uploading?
+
+The stored result is useful until a replacement analysis is ready. A separate `isReuploading` UI flag decides which screen to show, so the user can upload a new file without immediately deleting their last successful analysis. This also keeps the transition predictable if the new upload fails.
+
+### How the result and re-upload flow works
+
+1. On application load, the client requests any saved resume analysis and stores it in Redux.
+2. If an analysis exists, the scorer displays the report view.
+3. Selecting **Re-upload Resume** sets the re-upload state and opens the existing drag-and-drop PDF upload interface.
+4. The new PDF is sent through the authenticated gateway to the Resume Service.
+5. On success, the client stores the returned analysis in Redux, clears the re-upload state, and renders the updated report.
+
+### Key concepts I learned
+
+- Redux keeps the latest saved resume analysis available across the app.
+- Local component state is appropriate for a temporary UI mode such as re-uploading.
+- Separating persisted data from view state avoids erasing a valid result merely to show a different screen.
+- Replacing the analysis only after a successful response gives the user a safer retry path.
+
+### Interview explanation
+
+“I completed the resume-analysis user journey by rendering the structured ATS report and adding a re-upload mode. The result is stored centrally in Redux, while a local UI flag controls whether the report or upload interface is displayed. A new successful upload atomically replaces the old analysis, so users can retry without losing their previous result.”
+
+### Next learning / implementation
+
+Align the frontend API URL with the gateway, add formal validation and automated tests for malformed AI responses, and test the re-upload path with invalid files and failed requests.

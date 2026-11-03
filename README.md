@@ -20,6 +20,7 @@ The foundation built so far includes:
 - A dedicated **Resume Service** that accepts PDFs, extracts text, analyses the resume with a Groq/LangChain agent, stores the result in MongoDB, and caches it in Redis.
 - A protected **Resume Scorer** page at `/scorer` with PDF selection, client-side size feedback, loading state, and authenticated upload to the Resume Service.
 - Structured AI resume output: the backend requests JSON, safely extracts/parses it, normalizes fields, and saves nested education, project, and experience data.
+- A Resume Scorer results view that displays the processed ATS analysis and lets the user re-upload a resume. The previous successful result remains available until the replacement analysis completes.
 
 Billing, interview, resume, and roadmap services are planned but not implemented.
 
@@ -190,15 +191,14 @@ For resume upload, send `multipart/form-data` using the field name `resume`.
 - The frontend Axios base URL is currently `http://localhost:8000`, while the gateway defaults to port `6000`; these must match for login and session checks to succeed.
 - Add input validation, user-facing login errors, and API tests.
 - Dashboard navigation includes Resume Builder, Resume Scorer, and Roadmap Builder links; the Resume Scorer route is implemented, while the other routed pages are still pending.
-- The Resume Scorer upload page is available, but the analysis result screen still needs to display the score, extracted profile, skill gaps, and recommendations.
+- Test the Resume Scorer results and re-upload flow for invalid PDFs, failed uploads, and replacement analyses.
 - Resume analysis now parses and normalizes LLM JSON; add formal schema validation and automated tests for malformed model responses.
 
 ## Next implementation steps
 
-1. Display resume-analysis results in the Resume Scorer after upload.
-2. Align the frontend API base URL with the gateway and test login, logout, upload, and session expiry.
-3. Add formal response validation and automated tests for PDF extraction and LLM output.
-4. Build the Resume Builder, interview, and roadmap workflows.
+1. Align the frontend API base URL with the gateway and test login, logout, upload, re-upload, and session expiry.
+2. Add formal response validation and automated tests for PDF extraction and LLM output.
+3. Build the Resume Builder, interview, and roadmap workflows.
 
 ## Tech used so far
 

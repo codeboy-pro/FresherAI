@@ -293,6 +293,7 @@ const Scorer = ({ user, setUser }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [isReuploading, setIsReuploading] = useState(false);
 
   const dispatch = useDispatch();
   const { resume } = useSelector((state) => state.resume);
@@ -376,6 +377,7 @@ const Scorer = ({ user, setUser }) => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       dispatch(setResume(response?.data?.data));
+      setIsReuploading(false);
     } catch (error) {
       console.error("Resume upload failed:", error);
 
@@ -390,7 +392,7 @@ const Scorer = ({ user, setUser }) => {
 
   /* ================= ANALYSIS RESULT PAGE ================= */
 
-  if (resume) {
+  if (resume && !isReuploading) {
     const score = Number(resume.score) || 0;
 
     const scoreLabel =
@@ -444,7 +446,7 @@ const Scorer = ({ user, setUser }) => {
               <motion.button
                 type="button"
                 onClick={() => {
-                  dispatch(setResume(null));
+                  setIsReuploading(true);
                   setFile(null);
                   setUploadError("");
                   setUploadSuccess(false);
