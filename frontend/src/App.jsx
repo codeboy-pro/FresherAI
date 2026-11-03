@@ -2,13 +2,17 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import { useEffect, useState } from "react";
-import { getCurrentUser } from "./apis/user.api.js";
+
 import Scorer from "./pages/Scorer.jsx";
+import { getresume } from "./apis/resume.api.js";
+import { useDispatch } from "react-redux";
+import { setResume } from "./redux/resumeSlice.js";
+import { getCurrentUser } from "./apis/user.api.js";
 
 const App = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const dispatch = useDispatch();
   useEffect(() => {
     const getuser = async () => {
       try {
@@ -20,6 +24,17 @@ const App = () => {
     };
     getuser();
   }, []);
+
+
+    useEffect(() => {
+      const getResumeData=async()=>{
+  const result=await getresume();
+  dispatch(setResume(result?.data));
+      }
+      getResumeData();
+    }, []);
+
+
 
   if (loading) {
     return (
