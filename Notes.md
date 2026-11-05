@@ -219,3 +219,43 @@ The stored result is useful until a replacement analysis is ready. A separate `i
 ### Next learning / implementation
 
 Align the frontend API URL with the gateway, add formal validation and automated tests for malformed AI responses, and test the re-upload path with invalid files and failed requests.
+
+## 2026-11-05 — Day 7: Resume Builder foundation and shared resume state
+
+### What I built
+
+I added a protected `/resume` route and started the Resume Builder. Its form data model covers six resume sections: personal information, professional summary, skills, experience, projects, and education. The repeatable sections support adding, editing, and removing multiple entries.
+
+I also introduced Redux Toolkit for shared resume-analysis state. When an authenticated user opens the app, the client requests any saved analysis and stores it in the Redux store. The Resume Scorer reads and replaces this shared state after successful analysis or re-upload.
+
+### Why use Redux here?
+
+The resume analysis is useful in more than one screen. Keeping it in Redux gives the application one source of truth instead of passing resume data through many component props or refetching it whenever a route changes. Local `useState` still handles temporary form and UI values.
+
+### How the current state flow works
+
+1. After session restoration, `App.jsx` calls the saved-resume API for the authenticated user.
+2. The response is stored with the `setResume` Redux action.
+3. The Resume Scorer selects that data from the store to render the existing report.
+4. A successful new upload dispatches `setResume` again, replacing the old analysis.
+5. The Resume Builder keeps its in-progress form data locally until persistence is added.
+
+### Key concepts I learned
+
+- A Redux **slice** groups state, reducer logic, and generated actions in one file.
+- `Provider` makes the Redux store available to the React application.
+- `useDispatch` sends actions; `useSelector` reads store state inside components.
+- Reusable input, textarea, and entry-card components reduce repeated form code.
+- Array updates with `map`, `filter`, and spread syntax support editable lists without mutating React state.
+
+### Current builder status
+
+The data structure and section components are ready, but the page currently opens the education section and does not yet include multi-step navigation, validation, save/load, preview, or PDF export.
+
+### Interview explanation
+
+“I started a structured Resume Builder and introduced Redux for shared resume data. Redux keeps the latest AI analysis available across routes, while local state manages an in-progress builder form. The form uses reusable components and immutable array updates so users can add and edit multiple education, project, and experience records cleanly.”
+
+### Next learning / implementation
+
+Add step navigation and validation, connect the builder to persistent storage, create a live resume preview, and generate a downloadable PDF.

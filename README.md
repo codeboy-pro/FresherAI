@@ -21,6 +21,8 @@ The foundation built so far includes:
 - A protected **Resume Scorer** page at `/scorer` with PDF selection, client-side size feedback, loading state, and authenticated upload to the Resume Service.
 - Structured AI resume output: the backend requests JSON, safely extracts/parses it, normalizes fields, and saves nested education, project, and experience data.
 - A Resume Scorer results view that displays the processed ATS analysis and lets the user re-upload a resume. The previous successful result remains available until the replacement analysis completes.
+- A protected **Resume Builder** route at `/resume` with a form-data foundation for personal details, summary, skills, experience, projects, and education.
+- Redux Toolkit state for the latest resume analysis, loaded when an authenticated user opens the app and shared with the Resume Scorer.
 
 Billing, interview, resume, and roadmap services are planned but not implemented.
 
@@ -74,8 +76,9 @@ backend/
     └── roadmap/              # Planned
 frontend/
 ├── src/pages/                # Home and dashboard routes
-├── src/components/           # Login modal
+├── src/components/           # Login modal and resume form sections
 ├── src/apis/                 # Gateway API calls
+├── src/redux/                # Shared resume-analysis state
 └── src/utils/                # Axios and Firebase configuration
 ```
 
@@ -190,16 +193,18 @@ For resume upload, send `multipart/form-data` using the field name `resume`.
 - Cookie option names need correcting to `httpOnly` and `sameSite`; secure cookies should be enabled in production.
 - The frontend Axios base URL is currently `http://localhost:8000`, while the gateway defaults to port `6000`; these must match for login and session checks to succeed.
 - Add input validation, user-facing login errors, and API tests.
-- Dashboard navigation includes Resume Builder, Resume Scorer, and Roadmap Builder links; the Resume Scorer route is implemented, while the other routed pages are still pending.
+- Dashboard navigation includes Resume Builder, Resume Scorer, and Roadmap Builder links. Resume Builder and Resume Scorer routes are implemented; Roadmap Builder is still pending.
 - Test the Resume Scorer results and re-upload flow for invalid PDFs, failed uploads, and replacement analyses.
 - Resume analysis now parses and normalizes LLM JSON; add formal schema validation and automated tests for malformed model responses.
+- The Resume Builder currently provides form sections and local state only; step navigation, validation, save/load, preview, and PDF generation are still pending.
 
 ## Next implementation steps
 
 1. Align the frontend API base URL with the gateway and test login, logout, upload, re-upload, and session expiry.
 2. Add formal response validation and automated tests for PDF extraction and LLM output.
-3. Build the Resume Builder, interview, and roadmap workflows.
+3. Complete the Resume Builder flow: step navigation, validation, persistence, preview, and PDF export.
+4. Build the interview and roadmap workflows.
 
 ## Tech used so far
 
-React, Vite, Tailwind CSS, Motion, React Router, Node.js, Express, MongoDB, Mongoose, Redis, Docker Compose, Firebase Admin SDK, Multer, pdf-parse, LangChain, Groq, dotenv, nodemon, and `express-http-proxy`.
+React, Vite, Tailwind CSS, Motion, React Router, Redux Toolkit, React Redux, Recharts, Node.js, Express, MongoDB, Mongoose, Redis, Docker Compose, Firebase Admin SDK, Multer, pdf-parse, LangChain, Groq, dotenv, nodemon, and `express-http-proxy`.
