@@ -10,17 +10,24 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-
 const PORT = process.env.PORT || 6001;
 
 app.get("/", (req, res) => {
   res.send("Hello from auth service");
 });
 
+app.use("/", authRouter);
 
-app.use("/",authRouter);
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`Auth service is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Auth service could not start without MongoDB");
+    process.exit(1);
+  }
+};
 
-app.listen(PORT, () => {
-  console.log(`Auth service is running on port ${PORT}`);
-  connectDB();
-});
+startServer();

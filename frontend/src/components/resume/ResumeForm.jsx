@@ -238,7 +238,9 @@ const ResumeForm = ({ step, data, setData }) => {
         </button>
       </div>
     );
-  } else if (step === 6) {
+  }
+  //step 6 for education
+  else if (step === 6) {
     const addEducation = () => {
       setData({
         ...data,
