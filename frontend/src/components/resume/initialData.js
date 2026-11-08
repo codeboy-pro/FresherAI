@@ -1,5 +1,5 @@
 const initialData = {
-  // Step 1 - Personal Info
+  // Step 1 - Personal Information
   name: "",
   email: "",
   phone: "",
@@ -7,19 +7,19 @@ const initialData = {
   linkedin: "",
   github: "",
 
-  // Step 2 - Summary
+  // Step 2 - Professional Summary
   summary: "",
 
-  // Step 3 - Skills (comma separated string)
+  // Step 3 - Skills
   skills: "",
 
-  // Step 4 - Experience (array of objects)
+  // Step 4 - Work Experience
   experience: [],
 
-  // Step 5 - Projects (array of objects)
+  // Step 5 - Projects
   projects: [],
 
-  // Step 6 - Education (array of objects)
+  // Step 6 - Education
   education: [],
 };
 
