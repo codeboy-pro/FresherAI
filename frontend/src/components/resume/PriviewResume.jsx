@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 const PAGE_WIDTH = 794;
 const MIN_PAGE_HEIGHT = 1123;
 
-const PriviewResume = ({ data, onBack }) => {
+const PriviewResume = ({ data, onBack,user,setUser }) => {
   const resumeRef = useRef(null);
   const previewAreaRef = useRef(null);
 
@@ -128,7 +128,7 @@ const PriviewResume = ({ data, onBack }) => {
             </motion.button>
 
             <div className="min-w-0 flex-1 sm:flex-none">
-              <DownloadBtn docRef={resumeRef} />
+              <DownloadBtn docRef={resumeRef} user={user} setUser={setUser} />
             </div>
           </div>
         </div>

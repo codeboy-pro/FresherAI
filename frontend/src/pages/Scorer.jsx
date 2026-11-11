@@ -23,6 +23,7 @@ import { GiArtificialHive } from "react-icons/gi";
 import api from "../utils/axios";
 import { setResume } from "../redux/resumeSlice";
 import { PolarAngleAxis, RadialBar, RadialBarChart } from "recharts";
+import { useCoins } from "../apis/user.api.js";
 
 /* ================= ANIMATION VARIANTS ================= */
 
@@ -366,7 +367,11 @@ const Scorer = ({ user, setUser }) => {
       setLoading(true);
       setUploadError("");
       setUploadSuccess(false);
-
+      const coinResponse=await useCoins({coins:10,action:"resume-scorer"});
+      setUser((prev) => ({
+        ...prev,
+        interviewCoin: coinResponse?.interviewCoin,
+      }));
       const formData = new FormData();
       formData.append("resume", file);
 
