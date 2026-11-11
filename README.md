@@ -23,6 +23,9 @@ The foundation built so far includes:
 - A Resume Scorer results view that displays the processed ATS analysis and lets the user re-upload a resume. The previous successful result remains available until the replacement analysis completes.
 - A protected **Resume Builder** route at `/resume` with a form-data foundation for personal details, summary, skills, experience, projects, and education.
 - Redux Toolkit state for the latest resume analysis, loaded when an authenticated user opens the app and shared with the Resume Scorer.
+- A six-step Resume Builder workflow with progress navigation, responsive ATS-style preview, and print-to-PDF support.
+- Interview-coin usage for resume downloads: the Auth Service verifies the session, deducts coins from MongoDB, and refreshes the Redis session balance.
+- An initial **Interview Service** foundation with an authenticated gateway route, MongoDB interview schema, Groq/LangChain setup, and dedicated HR, technical, feedback, and summary prompt templates.
 
 Billing, interview, resume, and roadmap services are planned but not implemented.
 
@@ -50,6 +53,14 @@ API Gateway ──► Resume Service :8003
                     │
                     ▼
           PDF text extraction → Groq/LangChain resume agent
+
+Client
+  │  /api/interview (authenticated)
+  ▼
+API Gateway ──► Interview Service :6003
+                    │
+                    ├──► MongoDB (interview records)
+                    └──► Groq/LangChain (question, feedback, summary generation)
 ```
 
 Keeping the gateway separate gives clients one entry point and keeps authentication logic isolated. Additional services can later be connected through the gateway in the same way.
@@ -73,10 +84,14 @@ backend/
     │   ├── controllers/      # Upload and retrieval logic
     │   ├── middleware/       # PDF upload validation
     │   └── models/           # Resume analysis schema
+    ├── interview/            # Interview workflow foundation
+    │   ├── agents/           # Question-generation agent
+    │   ├── prompts/          # HR, technical, feedback, and summary prompts
+    │   └── models/           # Interview/question/feedback schemas
     └── roadmap/              # Planned
 frontend/
 ├── src/pages/                # Home and dashboard routes
-├── src/components/           # Login modal and resume form sections
+├── src/components/           # Login modal, resume forms, preview, and PDF action
 ├── src/apis/                 # Gateway API calls
 ├── src/redux/                # Shared resume-analysis state
 └── src/utils/                # Axios and Firebase configuration
@@ -99,6 +114,7 @@ Create `backend/gateway/.env`:
 PORT=6000
 AUTH_SERVICE_URL=http://localhost:6001
 RESUME_SERVICE_URL=http://localhost:8003
+INTERVIEW_SERVICE_URL=http://localhost:6003
 ```
 
 Create `backend/services/auth/.env`:
@@ -115,6 +131,14 @@ Create `backend/services/resume/.env`:
 PORT=8003
 MONGODB_URI=your_mongodb_connection_string
 REDIS_URL=redis://localhost:6379
+GROQ_API_KEY=your_groq_api_key
+```
+
+Create `backend/services/interview/.env`:
+
+```env
+PORT=6003
+MONGODB_URI=your_mongodb_connection_string
 GROQ_API_KEY=your_groq_api_key
 ```
 
@@ -167,6 +191,14 @@ npm install
 npm run dev
 ```
 
+Start the Interview Service when working on interview features:
+
+```bash
+cd backend/services/interview
+npm install
+npm run dev
+```
+
 ### Current health checks
 
 - `GET http://localhost:6000/` → API gateway response
@@ -182,6 +214,7 @@ npm run dev
 | `/api/me` | `GET` | Returns the user data stored in a valid Redis-backed session. |
 | `/api/resume/upload` | `POST` | Authenticated PDF upload. The gateway forwards the user ID to the Resume Service for analysis and storage. |
 | `/api/resume/get-resume` | `GET` | Authenticated retrieval of the user’s resume analysis, preferring Redis cache before MongoDB. |
+| `/api/auth/user-coins` | `POST` | Authenticated interview-coin deduction for an action such as resume download. |
 
 For login, the Firebase client obtains an ID token and sends `{ "token": "firebase_id_token" }` to the gateway.
 
@@ -196,15 +229,17 @@ For resume upload, send `multipart/form-data` using the field name `resume`.
 - Dashboard navigation includes Resume Builder, Resume Scorer, and Roadmap Builder links. Resume Builder and Resume Scorer routes are implemented; Roadmap Builder is still pending.
 - Test the Resume Scorer results and re-upload flow for invalid PDFs, failed uploads, and replacement analyses.
 - Resume analysis now parses and normalizes LLM JSON; add formal schema validation and automated tests for malformed model responses.
-- The Resume Builder currently provides form sections and local state only; step navigation, validation, save/load, preview, and PDF generation are still pending.
+- Resume Builder now supports navigation, preview, and print-to-PDF, but its form data is still local only and is not yet saved to the backend.
+- The Interview Service currently has no controller or route handlers; connect the interview prompts and agent to create, answer, feedback, and summary endpoints.
 
 ## Next implementation steps
 
 1. Align the frontend API base URL with the gateway and test login, logout, upload, re-upload, and session expiry.
 2. Add formal response validation and automated tests for PDF extraction and LLM output.
-3. Complete the Resume Builder flow: step navigation, validation, persistence, preview, and PDF export.
-4. Build the interview and roadmap workflows.
+3. Persist Resume Builder data and add validation before PDF generation.
+4. Implement Interview Service endpoints for interview creation, answers, feedback, and final summary.
+5. Build the interview UI and roadmap workflow.
 
 ## Tech used so far
 
-React, Vite, Tailwind CSS, Motion, React Router, Redux Toolkit, React Redux, Recharts, Node.js, Express, MongoDB, Mongoose, Redis, Docker Compose, Firebase Admin SDK, Multer, pdf-parse, LangChain, Groq, dotenv, nodemon, and `express-http-proxy`.
+React, Vite, Tailwind CSS, Motion, React Router, Redux Toolkit, React Redux, Recharts, react-to-print, Node.js, Express, MongoDB, Mongoose, Redis, Docker Compose, Firebase Admin SDK, Multer, pdf-parse, LangChain, Groq, dotenv, nodemon, and `express-http-proxy`.

@@ -259,3 +259,39 @@ The data structure and section components are ready, but the page currently open
 ### Next learning / implementation
 
 Add step navigation and validation, connect the builder to persistent storage, create a live resume preview, and generate a downloadable PDF.
+
+## 2026-11-11 — Day 8: Resume preview, coin usage, and Interview Service foundation
+
+### What I built
+
+I completed the first user flow of the Resume Builder. It now has six navigable sections—personal information, summary, skills, experience, projects, and education—with a progress indicator and reusable form fields. Users can open a responsive ATS-style preview and print it as a PDF.
+
+I also added a coin-usage flow for PDF downloads. Before printing, the frontend calls the Auth Service. The backend checks the session, verifies that the user has enough coins, deducts the configured amount from MongoDB, and updates the Redis session so the UI can show the new balance.
+
+Finally, I started the Interview Service. I added a gateway route, service setup, a MongoDB interview model, an LLM agent, and prompt templates for HR interviews, technical interviews, per-answer feedback, and final summaries.
+
+### Why charge coins on the server?
+
+The browser cannot be trusted to decide whether a user may spend coins. The Auth Service reads the HTTP-only session, loads the user from MongoDB, performs the balance check and deduction, then refreshes Redis. This keeps the account balance authoritative on the server.
+
+### How the Resume Builder download flow works
+
+1. The user completes the builder form and opens the preview.
+2. The preview scales the resume for the available screen width while keeping an A4 document layout.
+3. The user selects **Download PDF**.
+4. The frontend requests coin usage from `/api/auth/user-coins`.
+5. If sufficient coins are available, the backend updates MongoDB and Redis, the frontend updates the displayed balance, and `react-to-print` opens the browser print/PDF flow.
+
+### Interview Service design learned
+
+- The interview schema tracks the user, interview type, role, questions, answers, timers, per-question feedback, overall score, strengths, weaknesses, recommendations, summary, and status.
+- Different prompt templates keep HR questions, technical questions, answer feedback, and final summaries focused on their specific jobs.
+- The gateway protects `/api/interview` with the same session middleware used by Resume Service requests and forwards the authenticated user identity downstream.
+
+### Interview explanation
+
+“I completed the resume creation experience with step navigation, responsive preview, and server-authorized PDF downloads. Coin deduction happens in the Auth Service so the client cannot manipulate balances. I also designed the foundation of an Interview Service with a data model and specialized LLM prompts, ready for interview creation and feedback endpoints.”
+
+### Next learning / implementation
+
+Persist builder data, validate it before download, then implement Interview Service APIs for generating questions, saving answers, evaluating feedback, and producing a final interview summary.
