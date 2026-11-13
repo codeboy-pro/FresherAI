@@ -21,6 +21,7 @@ The platform follows a **microservices-based architecture**, keeping different r
 The project foundation currently includes:
 
 ### 🔐 Authentication & User Management
+
 - [x] API Gateway with request forwarding to independent backend services.
 - [x] Dedicated Authentication Service built with Express.js.
 - [x] Firebase Admin SDK integration for Google/Firebase ID token verification.
@@ -33,6 +34,7 @@ The project foundation currently includes:
 - [x] Client-side protected routes and authentication-based redirects.
 
 ### 🎨 Frontend & Dashboard
+
 - [x] React + Vite + Tailwind CSS landing page.
 - [x] Animated AI agent cards and feature sections.
 - [x] Dashboard preview and responsive UI.
@@ -41,6 +43,7 @@ The project foundation currently includes:
 - [x] Logout interface.
 
 ### 📄 AI Resume Scorer
+
 - [x] Dedicated Resume Service for PDF uploads and AI-powered resume analysis.
 - [x] PDF text extraction and processing.
 - [x] Groq + LangChain-powered resume analysis agent.
@@ -53,6 +56,7 @@ The project foundation currently includes:
 - [x] Resume re-upload functionality while preserving the previous successful result until replacement analysis completes.
 
 ### 📝 AI Resume Builder
+
 - [x] Protected Resume Builder route at `/resume`.
 - [x] Form-data foundation for personal information, professional summary, skills, experience, projects, and education.
 - [x] Redux Toolkit integration for sharing resume-analysis state.
@@ -62,17 +66,21 @@ The project foundation currently includes:
 - [x] Interview-coin deduction for resume downloads through the Auth Service.
 
 ### 🤖 AI Interview Service
-- [x] Initial Interview Service foundation.
-- [x] Authenticated API Gateway route.
-- [x] MongoDB interview schema.
-- [x] Groq + LangChain integration setup.
+
+- [x] Interview Service with authenticated API Gateway routing.
+- [x] MongoDB interview schema with question, answer, feedback, progress, and report fields.
+- [x] Groq + LangChain integration with LangGraph orchestration.
 - [x] Dedicated prompt templates for:
   - HR interviews
   - Technical interviews
   - Answer evaluation and feedback
   - Interview summaries
+- [x] Interview start endpoint that generates and persists questions.
+- [x] Answer submission endpoint with per-answer feedback and progress tracking.
+- [x] Automatic final summary, score, strengths, weaknesses, and recommendations after the last answer.
+- [x] Authenticated interview retrieval by interview ID.
 
-> 🚧 **Note:** The Interview Service is currently at its foundation stage. Complete interview workflows and API endpoints are still under development.
+> 🚧 **Note:** The backend interview workflow is available. The React interview experience, validation, interruption recovery, and automated tests are still under development.
 
 ---
 
@@ -149,10 +157,13 @@ FresherAI/
 │       │   ├── middleware/      # PDF upload validation
 │       │   └── models/          # Resume analysis schema
 │       │
-│       ├── interview/           # Interview Service foundation
-│       │   ├── agents/          # Question-generation agent
+│       ├── interview/           # AI Interview Service
+│       │   ├── agents/          # Question, feedback & summary agents
+│       │   ├── graph/           # LangGraph workflow and state
 │       │   ├── prompts/         # HR, technical, feedback & summary
-│       │   └── models/          # Interview-related schemas
+│       │   ├── controllers/     # Interview workflow handlers
+│       │   ├── routes/          # Interview API routes
+│       │   └── models/          # Interview schema
 │       │
 │       ├── billing/             # Planned
 │       └── roadmap/             # Planned
@@ -311,36 +322,39 @@ npm run dev
 
 ## 🌐 Application URLs
 
-| Service | URL | Port |
-|---|---|---|
-| Frontend | http://localhost:5173 | `5173` |
-| API Gateway | http://localhost:6000 | `6000` |
-| Auth Service | http://localhost:6001 | `6001` |
-| Resume Service | http://localhost:8003 | `8003` |
+| Service           | URL                   | Port   |
+| ----------------- | --------------------- | ------ |
+| Frontend          | http://localhost:5173 | `5173` |
+| API Gateway       | http://localhost:6000 | `6000` |
+| Auth Service      | http://localhost:6001 | `6001` |
+| Resume Service    | http://localhost:8003 | `8003` |
 | Interview Service | http://localhost:6003 | `6003` |
 
 ### ❤️ Current Health Checks
 
-| Endpoint | Description |
-|---|---|
-| `GET /` on port `6000` | API Gateway response |
-| `GET /` on port `6001` | Auth Service response |
-| `GET http://localhost:5173/` | FresherAI home page |
+| Endpoint                     | Description           |
+| ---------------------------- | --------------------- |
+| `GET /` on port `6000`       | API Gateway response  |
+| `GET /` on port `6001`       | Auth Service response |
+| `GET http://localhost:5173/` | FresherAI home page   |
 
 ---
 
 ## 🔌 Current API Endpoints
 
-The following endpoints are currently part of the implemented API foundation.
+The following endpoints are currently part of the implemented API.
 
-| Endpoint | Method | Description |
-|---|---|---|
-| `/api/auth/login` | `POST` | Verifies Firebase ID token, creates/fetches user, and stores Redis session. |
-| `/api/auth/logout` | `GET` | Intended to delete Redis session and clear session cookie. |
-| `/api/me` | `GET` | Returns user information from a valid Redis-backed session. |
-| `/api/resume/upload` | `POST` | Authenticated PDF upload and AI resume analysis. |
-| `/api/resume/get-resume` | `GET` | Retrieves resume analysis, preferring Redis cache before MongoDB. |
-| `/api/auth/user-coins` | `POST` | Deducts interview coins for actions such as resume downloads. |
+| Endpoint                 | Method | Description                                                                 |
+| ------------------------ | ------ | --------------------------------------------------------------------------- |
+| `/api/auth/login`        | `POST` | Verifies Firebase ID token, creates/fetches user, and stores Redis session. |
+| `/api/auth/logout`       | `GET`  | Intended to delete Redis session and clear session cookie.                  |
+| `/api/me`                | `GET`  | Returns user information from a valid Redis-backed session.                 |
+| `/api/resume/upload`     | `POST` | Authenticated PDF upload and AI resume analysis.                            |
+| `/api/resume/get-resume` | `GET`  | Retrieves resume analysis, preferring Redis cache before MongoDB.           |
+| `/api/auth/user-coins`   | `POST` | Deducts interview coins for actions such as resume downloads.               |
+| `/api/interview/start`   | `POST` | Generates questions and creates an authenticated interview session.         |
+| `/api/interview/submit`  | `POST` | Saves an answer, evaluates it, and advances the interview.                  |
+| `/api/interview/:id`     | `GET`  | Retrieves an authenticated user’s interview and current report data.        |
 
 ### 📤 Authentication Flow
 
@@ -376,6 +390,30 @@ resume
 
 The API Gateway forwards the authenticated user ID to the Resume Service for PDF processing, AI analysis, and storage.
 
+### 🤖 Interview Flow
+
+Start an interview through the authenticated gateway:
+
+```json
+{
+  "type": "technical",
+  "role": "Frontend Developer",
+  "useResume": false,
+  "resume": {}
+}
+```
+
+Submit each answer with the returned interview ID:
+
+```json
+{
+  "interviewId": "mongodb_interview_id",
+  "answer": "candidate answer"
+}
+```
+
+The service returns the next question until the final answer. The final response includes the completed interview report generated by the summary agent.
+
 ---
 
 ## 🚧 Known Issues & Work in Progress
@@ -390,8 +428,9 @@ The following areas still need attention:
 - [ ] Test Resume Scorer with invalid PDFs, failed uploads, and replacement analyses.
 - [ ] Add formal schema validation and automated tests for malformed LLM responses.
 - [ ] Persist Resume Builder form data in the backend.
-- [ ] Implement Interview Service controllers and route handlers.
-- [ ] Connect interview prompts and agents to interview creation, answer submission, feedback, and summary endpoints.
+- [ ] Add request validation and automated tests for interview authorization and invalid payloads.
+- [ ] Connect the React interview UI to the implemented start, submit, and retrieval endpoints.
+- [ ] Add interrupted-interview recovery and resume-context integration.
 
 ---
 
@@ -399,21 +438,22 @@ The following areas still need attention:
 
 The next development milestones are:
 
-| Priority | Task | Status |
-|---|---|---|
-| 1 | Align frontend API URL and test authentication flows | 🔄 Pending |
-| 2 | Add PDF extraction and AI response validation tests | 🔄 Pending |
-| 3 | Persist Resume Builder data in the backend | 🔄 Pending |
-| 4 | Implement Interview Service APIs | 🔄 Pending |
-| 5 | Develop AI-powered mock interview UI | 🔄 Pending |
-| 6 | Build Roadmap Builder workflow | 🔄 Pending |
-| 7 | Develop Billing Service | 📌 Planned |
+| Priority | Task                                                 | Status     |
+| -------- | ---------------------------------------------------- | ---------- |
+| 1        | Align frontend API URL and test authentication flows | 🔄 Pending |
+| 2        | Add PDF extraction and AI response validation tests  | 🔄 Pending |
+| 3        | Persist Resume Builder data in the backend           | 🔄 Pending |
+| 4        | Add interview validation and automated tests         | 🔄 Pending |
+| 5        | Develop AI-powered mock interview UI                 | 🔄 Pending |
+| 6        | Build Roadmap Builder workflow                       | 🔄 Pending |
+| 7        | Develop Billing Service                              | 📌 Planned |
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### 🎨 Frontend
+
 - React.js
 - Vite
 - Tailwind CSS
@@ -425,6 +465,7 @@ The next development milestones are:
 - react-to-print
 
 ### ⚙️ Backend
+
 - Node.js
 - Express.js
 - MongoDB
@@ -436,12 +477,14 @@ The next development milestones are:
 - express-http-proxy
 
 ### 🤖 AI & Authentication
+
 - Groq API
 - LangChain
 - Firebase Authentication
 - Firebase Admin SDK
 
 ### 🔧 Development Tools
+
 - Git & GitHub
 - Axios
 - dotenv
@@ -467,7 +510,7 @@ FresherAI aims to become a complete AI-powered interview preparation ecosystem w
 
 **FresherAI is actively under development.**
 
-The authentication foundation, resume analysis workflow, and initial interview service architecture are in place. More features and complete AI interview workflows are being developed incrementally.
+The authentication foundation, resume analysis workflow, resume builder, and first end-to-end interview backend workflow are in place. More frontend interview features and production hardening are being developed incrementally.
 
 <p align="center">
   <b>🚀 Building smarter interview preparation, one feature at a time!</b>

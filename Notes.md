@@ -295,3 +295,35 @@ The browser cannot be trusted to decide whether a user may spend coins. The Auth
 ### Next learning / implementation
 
 Persist builder data, validate it before download, then implement Interview Service APIs for generating questions, saving answers, evaluating feedback, and producing a final interview summary.
+
+## 2026-11-13 — Day 9: Interview workflow backend
+
+### What I built
+
+I implemented the first complete backend workflow for AI mock interviews. The authenticated gateway now forwards interview requests to the Interview Service, which can generate a question set, save an interview in MongoDB, evaluate submitted answers, and produce a final report when the last answer is submitted.
+
+### How the interview flow works
+
+1. The client sends `POST /api/interview/start` with an interview `type`, `role`, and optional resume context.
+2. The Interview Service invokes a LangGraph workflow and the interview agent generates the questions.
+3. The service stores the interview with its questions, current-question index, user ID, role, type, and `in-progress` status.
+4. The client sends each answer to `POST /api/interview/submit` with the interview ID and answer text.
+5. The feedback agent evaluates the answer and the service stores the answer and structured feedback on the current question.
+6. After the final answer, the graph invokes the summary agent and saves the overall score, summary, strengths, weaknesses, and recommendations.
+7. `GET /api/interview/:id` returns the authenticated user’s saved interview.
+
+### Key concepts I learned
+
+- **LangGraph** can route different AI operations from shared state using conditional edges.
+- A persistent interview document lets the API resume progress across requests instead of keeping the current question only in memory.
+- The gateway authenticates the session and forwards the trusted user ID as `x-user-id`; the Interview Service uses that ID when reading and writing interviews.
+- Separate agents keep question generation, answer feedback, and final summarization focused on one task each.
+- The interview schema embeds questions and their feedback so a complete interview can be loaded as one document.
+
+### Interview explanation
+
+“I implemented the backend workflow for AI mock interviews using an authenticated gateway, an Interview Service, MongoDB, and LangGraph. The service generates questions, evaluates each answer, persists progress, and runs a final summary agent when the interview is complete. User ownership is enforced through the session-derived ID forwarded by the gateway.”
+
+### Current status and next implementation
+
+The backend endpoints are available, but the frontend interview screen is still pending. The next steps are to add request/schema validation, connect the React interview UI to these endpoints, handle interrupted interviews, and add automated tests for authorization, invalid payloads, and completed reports.
