@@ -1,4 +1,4 @@
-import Annotation from "@langchain/langgraph";
+import {Annotation} from "@langchain/langgraph";
 const interviewState = Annotation.Root({
   action: Annotation(),
 
