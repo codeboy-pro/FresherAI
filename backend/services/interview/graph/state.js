@@ -21,3 +21,4 @@ const interviewState = Annotation.Root({
 });
 
 
+export default interviewState;
