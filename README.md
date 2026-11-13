@@ -1,245 +1,474 @@
-# FresherAI — Multi-Agent AI Interview Platform
+# 🚀 FresherAI — Multi-Agent AI Interview Platform
 
-FresherAI is a MERN-stack project in its early full-stack phase. Its goal is to help freshers practise interviews with AI-powered agents and receive structured feedback. The project uses independent backend services so features can grow without putting all responsibilities in one application.
+<p align="center">
+  <b>Practice Smarter. Interview Better. Get Hired Faster.</b>
+</p>
 
-## Current progress
+<p align="center">
+  An AI-powered interview preparation platform designed to help freshers build confidence, improve their resumes, and prepare for real-world technical interviews.
+</p>
 
-The foundation built so far includes:
+---
 
-- An **API Gateway** that receives public requests and forwards `/api/auth` traffic to the authentication service.
-- An independent **Auth Service** built with Express.
-- **Firebase Admin** integration for verifying Google/Firebase ID tokens.
-- **MongoDB + Mongoose** user persistence, including Firebase UID, profile data, interview-coin balance, and timestamps.
-- An Auth Service router with `POST /login` and `GET /logout`, plus JSON-body and cookie-parsing middleware.
-- **Redis-backed sessions** with a seven-day expiry, and Docker Compose to run Redis locally.
-- A full **React + Vite + Tailwind CSS** landing page with animated agent cards, feature sections, and dashboard preview.
-- Firebase client-side Google sign-in wired from the login modal to the authentication API.
-- Gateway middleware for CORS, cookies, request logging, and a protected `GET /api/me` endpoint.
-- Client-side protected routes: authenticated users reach the dashboard; other users are redirected to the home page.
-- A responsive dashboard shell with expandable desktop navigation, a mobile drawer, user details, interview-coin display, and logout UI.
-- A dedicated **Resume Service** that accepts PDFs, extracts text, analyses the resume with a Groq/LangChain agent, stores the result in MongoDB, and caches it in Redis.
-- A protected **Resume Scorer** page at `/scorer` with PDF selection, client-side size feedback, loading state, and authenticated upload to the Resume Service.
-- Structured AI resume output: the backend requests JSON, safely extracts/parses it, normalizes fields, and saves nested education, project, and experience data.
-- A Resume Scorer results view that displays the processed ATS analysis and lets the user re-upload a resume. The previous successful result remains available until the replacement analysis completes.
-- A protected **Resume Builder** route at `/resume` with a form-data foundation for personal details, summary, skills, experience, projects, and education.
-- Redux Toolkit state for the latest resume analysis, loaded when an authenticated user opens the app and shared with the Resume Scorer.
-- A six-step Resume Builder workflow with progress navigation, responsive ATS-style preview, and print-to-PDF support.
-- Interview-coin usage for resume downloads: the Auth Service verifies the session, deducts coins from MongoDB, and refreshes the Redis session balance.
-- An initial **Interview Service** foundation with an authenticated gateway route, MongoDB interview schema, Groq/LangChain setup, and dedicated HR, technical, feedback, and summary prompt templates.
+## 🌟 About the Project
 
-Billing, interview, resume, and roadmap services are planned but not implemented.
+**FresherAI** is a MERN-stack, multi-agent AI interview platform currently under active development. It aims to help students and freshers prepare for interviews through specialized AI agents that analyze resumes, conduct mock interviews, evaluate responses, and provide structured feedback.
 
-## Architecture
+The platform follows a **microservices-based architecture**, keeping different responsibilities isolated so that individual services can evolve independently.
+
+## ✨ Current Progress
+
+The project foundation currently includes:
+
+### 🔐 Authentication & User Management
+- [x] API Gateway with request forwarding to independent backend services.
+- [x] Dedicated Authentication Service built with Express.js.
+- [x] Firebase Admin SDK integration for Google/Firebase ID token verification.
+- [x] MongoDB + Mongoose user persistence, including Firebase UID, profile information, interview-coin balance, and timestamps.
+- [x] Authentication APIs: `POST /login` and `GET /logout`.
+- [x] Redis-backed sessions with a seven-day expiry.
+- [x] Docker Compose configuration for running Redis locally.
+- [x] Gateway middleware for CORS, cookies, request logging, and protected `/api/me`.
+- [x] Firebase client-side Google sign-in integrated with the authentication API.
+- [x] Client-side protected routes and authentication-based redirects.
+
+### 🎨 Frontend & Dashboard
+- [x] React + Vite + Tailwind CSS landing page.
+- [x] Animated AI agent cards and feature sections.
+- [x] Dashboard preview and responsive UI.
+- [x] Responsive dashboard shell with expandable desktop navigation and mobile sidebar drawer.
+- [x] User profile details and interview-coin balance display.
+- [x] Logout interface.
+
+### 📄 AI Resume Scorer
+- [x] Dedicated Resume Service for PDF uploads and AI-powered resume analysis.
+- [x] PDF text extraction and processing.
+- [x] Groq + LangChain-powered resume analysis agent.
+- [x] MongoDB storage and Redis caching for resume analysis.
+- [x] Protected Resume Scorer page at `/scorer`.
+- [x] PDF selection, file-size feedback, loading states, and authenticated uploads.
+- [x] Structured JSON-based AI resume analysis with safe parsing and field normalization.
+- [x] Nested education, project, and experience data storage.
+- [x] ATS analysis results dashboard.
+- [x] Resume re-upload functionality while preserving the previous successful result until replacement analysis completes.
+
+### 📝 AI Resume Builder
+- [x] Protected Resume Builder route at `/resume`.
+- [x] Form-data foundation for personal information, professional summary, skills, experience, projects, and education.
+- [x] Redux Toolkit integration for sharing resume-analysis state.
+- [x] Six-step resume-building workflow.
+- [x] Progress navigation and responsive ATS-style resume preview.
+- [x] Print-to-PDF functionality.
+- [x] Interview-coin deduction for resume downloads through the Auth Service.
+
+### 🤖 AI Interview Service
+- [x] Initial Interview Service foundation.
+- [x] Authenticated API Gateway route.
+- [x] MongoDB interview schema.
+- [x] Groq + LangChain integration setup.
+- [x] Dedicated prompt templates for:
+  - HR interviews
+  - Technical interviews
+  - Answer evaluation and feedback
+  - Interview summaries
+
+> 🚧 **Note:** The Interview Service is currently at its foundation stage. Complete interview workflows and API endpoints are still under development.
+
+---
+
+## 🏗️ System Architecture
+
+FresherAI follows a microservices-based architecture where the API Gateway acts as the single entry point for frontend requests.
 
 ```text
-React client :5173
-  │  Firebase Google sign-in → ID token
-  ▼
-API Gateway :6000
-  │  /api/auth
-  ▼
-Auth Service :6001 ──► Firebase Admin (verify token)
-  │                         │
-  ├─────────────────────────┴──► MongoDB (users)
-  └────────────────────────────► Redis (sessions)
-
-Client
-  │  /api/resume (authenticated)
-  ▼
-API Gateway ──► Resume Service :8003
-                    │       │
-                    ▼       ▼
-               MongoDB    Redis cache
-                    │
-                    ▼
-          PDF text extraction → Groq/LangChain resume agent
-
-Client
-  │  /api/interview (authenticated)
-  ▼
-API Gateway ──► Interview Service :6003
-                    │
-                    ├──► MongoDB (interview records)
-                    └──► Groq/LangChain (question, feedback, summary generation)
+                    🌐 React Client :5173
+                            |
+                            | Firebase Google Sign-in
+                            | ID Token
+                            ▼
+                    🚪 API Gateway :6000
+                            |
+             ┌──────────────┼─────────────────┐
+             |              |                 |
+             ▼              ▼                 ▼
+       🔐 Auth Service  📄 Resume Service  🤖 Interview Service
+          :6001            :8003              :6003
+             |              |                 |
+       ┌─────┴─────┐   ┌────┴────┐        ┌───┴────┐
+       |           |   |         |        |        |
+       ▼           ▼   ▼         ▼        ▼        ▼
+    Firebase   MongoDB MongoDB  Redis   MongoDB  Groq AI
+     Admin     Users   Resume   Cache   Records  /LangChain
+       |                |
+       ▼                ▼
+    Verify       PDF Extraction
+    ID Token          |
+                      ▼
+                 Groq/LangChain
+                 Resume Agent
 ```
 
-Keeping the gateway separate gives clients one entry point and keeps authentication logic isolated. Additional services can later be connected through the gateway in the same way.
+### 🔍 Architecture Highlights
 
-## Project structure
+- **API Gateway:** Centralized entry point for routing and authentication middleware.
+- **Auth Service:** Handles Firebase token verification, user management, and Redis-backed sessions.
+- **Resume Service:** Handles PDF extraction, AI-powered resume analysis, and result storage.
+- **Interview Service:** Foundation for AI-generated interview questions, feedback, and summaries.
+- **MongoDB:** Persistent storage for user profiles, resume analyses, and interview records.
+- **Redis:** Session management and resume-analysis caching.
+- **Groq + LangChain:** Powers LLM-based resume analysis and interview-related AI capabilities.
+
+The independent service architecture makes it easier to introduce new features without putting every responsibility into a single backend application.
+
+---
+
+## 📁 Project Structure
 
 ```text
-backend/
-├── gateway/                  # Public API entry point and request proxy
-├── shared/redis/              # Shared Redis client
-├── docker-compose.yml         # Local Redis container
-└── services/
-    ├── auth/                 # Firebase verification and user management
-    │   ├── configs/          # MongoDB and Firebase configuration
-    │   ├── controllers/      # Authentication business logic
-    │   └── models/           # Mongoose user schema
-    ├── billing/              # Planned
-    ├── interview/            # Planned
-    ├── resume/               # PDF upload and AI resume analysis
-    │   ├── agents/           # LLM-based ATS resume analysis
-    │   ├── controllers/      # Upload and retrieval logic
-    │   ├── middleware/       # PDF upload validation
-    │   └── models/           # Resume analysis schema
-    ├── interview/            # Interview workflow foundation
-    │   ├── agents/           # Question-generation agent
-    │   ├── prompts/          # HR, technical, feedback, and summary prompts
-    │   └── models/           # Interview/question/feedback schemas
-    └── roadmap/              # Planned
-frontend/
-├── src/pages/                # Home and dashboard routes
-├── src/components/           # Login modal, resume forms, preview, and PDF action
-├── src/apis/                 # Gateway API calls
-├── src/redux/                # Shared resume-analysis state
-└── src/utils/                # Axios and Firebase configuration
+FresherAI/
+│
+├── backend/
+│   │
+│   ├── gateway/                 # Public API Gateway
+│   │
+│   ├── shared/
+│   │   └── redis/               # Shared Redis client
+│   │
+│   ├── docker-compose.yml       # Local Redis configuration
+│   │
+│   └── services/
+│       │
+│       ├── auth/                # Authentication Service
+│       │   ├── configs/         # MongoDB & Firebase configuration
+│       │   ├── controllers/     # Authentication logic
+│       │   └── models/          # User schema
+│       │
+│       ├── resume/              # Resume Analysis Service
+│       │   ├── agents/          # AI resume analysis agent
+│       │   ├── controllers/     # Upload & retrieval logic
+│       │   ├── middleware/      # PDF upload validation
+│       │   └── models/          # Resume analysis schema
+│       │
+│       ├── interview/           # Interview Service foundation
+│       │   ├── agents/          # Question-generation agent
+│       │   ├── prompts/         # HR, technical, feedback & summary
+│       │   └── models/          # Interview-related schemas
+│       │
+│       ├── billing/             # Planned
+│       └── roadmap/             # Planned
+│
+└── frontend/
+    │
+    ├── src/
+    │   ├── pages/               # Home & Dashboard pages
+    │   ├── components/          # Reusable UI components
+    │   ├── apis/                # Gateway API integration
+    │   ├── redux/               # Redux Toolkit state management
+    │   └── utils/                # Axios & Firebase configuration
+    │
+    └── package.json
 ```
 
-## Run locally
+---
 
-### Prerequisites
+## ⚙️ Getting Started
 
-- Node.js
-- MongoDB connection string
-- A Firebase service-account JSON file for the Auth Service
-- Docker Desktop or Docker Engine (to run Redis)
+Follow these steps to run FresherAI locally.
 
-### 1. Configure environment variables
+### 📌 Prerequisites
 
-Create `backend/gateway/.env`:
+Make sure you have the following installed:
+
+- [Node.js](https://nodejs.org/)
+- [MongoDB](https://www.mongodb.com/)
+- [Docker Desktop](https://www.docker.com/) or Docker Engine
+- Firebase project with Admin SDK service-account credentials
+- Groq API key
+
+### 1️⃣ Clone the Repository
+
+```bash
+git clone <your-repository-url>
+cd FresherAI
+```
+
+### 2️⃣ Configure Environment Variables
+
+Create the following environment files.
+
+**📂 `backend/gateway/.env`**
 
 ```env
 PORT=6000
+
 AUTH_SERVICE_URL=http://localhost:6001
 RESUME_SERVICE_URL=http://localhost:8003
 INTERVIEW_SERVICE_URL=http://localhost:6003
 ```
 
-Create `backend/services/auth/.env`:
+**📂 `backend/services/auth/.env`**
 
 ```env
 PORT=6001
+
 MONGODB_URI=your_mongodb_connection_string
 REDIS_URL=redis://localhost:6379
 ```
 
-Create `backend/services/resume/.env`:
+**📂 `backend/services/resume/.env`**
 
 ```env
 PORT=8003
+
 MONGODB_URI=your_mongodb_connection_string
 REDIS_URL=redis://localhost:6379
+
 GROQ_API_KEY=your_groq_api_key
 ```
 
-Create `backend/services/interview/.env`:
+**📂 `backend/services/interview/.env`**
 
 ```env
 PORT=6003
+
 MONGODB_URI=your_mongodb_connection_string
 GROQ_API_KEY=your_groq_api_key
 ```
 
-Place your Firebase Admin service-account file at:
+**🔥 Firebase Admin Configuration**
+
+Place your Firebase Admin service-account JSON file at:
 
 ```text
 backend/services/auth/serviceAccountKey.json
 ```
 
-Never commit `.env` files or the Firebase service-account key. They are excluded by `.gitignore`.
+> 🔒 **Security:** Never commit `.env` files or Firebase service-account credentials. Make sure they are excluded through `.gitignore`.
 
-### 2. Start Redis
+### 3️⃣ Start Redis
+
+Open a terminal:
 
 ```bash
 cd backend
 docker compose up -d
 ```
 
-### 3. Install and start the backend services
+### 4️⃣ Start the Authentication Service
 
 ```bash
 cd backend/services/auth
+
 npm install
 npm run dev
 ```
 
-In a second terminal:
+### 5️⃣ Start the API Gateway
+
+Open another terminal:
 
 ```bash
 cd backend/gateway
+
 npm install
 npm run dev
 ```
 
-### 4. Start the frontend
+### 6️⃣ Start the Frontend
 
-In a third terminal:
+Open another terminal:
 
 ```bash
 cd frontend
+
 npm install
 npm run dev
 ```
 
-Start the Resume Service in another terminal when working on resume analysis:
+### 7️⃣ Start the Resume Service
+
+When working on resume analysis:
 
 ```bash
 cd backend/services/resume
+
 npm install
 npm run dev
 ```
 
-Start the Interview Service when working on interview features:
+### 8️⃣ Start the Interview Service
+
+When working on interview features:
 
 ```bash
 cd backend/services/interview
+
 npm install
 npm run dev
 ```
 
-### Current health checks
+---
 
-- `GET http://localhost:6000/` → API gateway response
-- `GET http://localhost:6001/` → Auth service response
-- `GET http://localhost:5173/` → FresherAI home page
+## 🌐 Application URLs
 
-## Current authentication API
+| Service | URL | Port |
+|---|---|---|
+| Frontend | http://localhost:5173 | `5173` |
+| API Gateway | http://localhost:6000 | `6000` |
+| Auth Service | http://localhost:6001 | `6001` |
+| Resume Service | http://localhost:8003 | `8003` |
+| Interview Service | http://localhost:6003 | `6003` |
 
-| Public endpoint | Method | Current purpose |
-| --- | --- | --- |
-| `/api/auth/login` | `POST` | Verifies a Firebase ID token, creates/fetches a user, and stores a Redis session. |
-| `/api/auth/logout` | `GET` | Intended to delete the Redis session and clear the session cookie. |
-| `/api/me` | `GET` | Returns the user data stored in a valid Redis-backed session. |
-| `/api/resume/upload` | `POST` | Authenticated PDF upload. The gateway forwards the user ID to the Resume Service for analysis and storage. |
-| `/api/resume/get-resume` | `GET` | Authenticated retrieval of the user’s resume analysis, preferring Redis cache before MongoDB. |
-| `/api/auth/user-coins` | `POST` | Authenticated interview-coin deduction for an action such as resume download. |
+### ❤️ Current Health Checks
 
-For login, the Firebase client obtains an ID token and sends `{ "token": "firebase_id_token" }` to the gateway.
+| Endpoint | Description |
+|---|---|
+| `GET /` on port `6000` | API Gateway response |
+| `GET /` on port `6001` | Auth Service response |
+| `GET http://localhost:5173/` | FresherAI home page |
 
-For resume upload, send `multipart/form-data` using the field name `resume`.
+---
 
-## Known work in progress
+## 🔌 Current API Endpoints
 
-- The logout controller needs its `req` and `res` parameters added before the endpoint can work.
-- Cookie option names need correcting to `httpOnly` and `sameSite`; secure cookies should be enabled in production.
-- The frontend Axios base URL is currently `http://localhost:8000`, while the gateway defaults to port `6000`; these must match for login and session checks to succeed.
-- Add input validation, user-facing login errors, and API tests.
-- Dashboard navigation includes Resume Builder, Resume Scorer, and Roadmap Builder links. Resume Builder and Resume Scorer routes are implemented; Roadmap Builder is still pending.
-- Test the Resume Scorer results and re-upload flow for invalid PDFs, failed uploads, and replacement analyses.
-- Resume analysis now parses and normalizes LLM JSON; add formal schema validation and automated tests for malformed model responses.
-- Resume Builder now supports navigation, preview, and print-to-PDF, but its form data is still local only and is not yet saved to the backend.
-- The Interview Service currently has no controller or route handlers; connect the interview prompts and agent to create, answer, feedback, and summary endpoints.
+The following endpoints are currently part of the implemented API foundation.
 
-## Next implementation steps
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/auth/login` | `POST` | Verifies Firebase ID token, creates/fetches user, and stores Redis session. |
+| `/api/auth/logout` | `GET` | Intended to delete Redis session and clear session cookie. |
+| `/api/me` | `GET` | Returns user information from a valid Redis-backed session. |
+| `/api/resume/upload` | `POST` | Authenticated PDF upload and AI resume analysis. |
+| `/api/resume/get-resume` | `GET` | Retrieves resume analysis, preferring Redis cache before MongoDB. |
+| `/api/auth/user-coins` | `POST` | Deducts interview coins for actions such as resume downloads. |
 
-1. Align the frontend API base URL with the gateway and test login, logout, upload, re-upload, and session expiry.
-2. Add formal response validation and automated tests for PDF extraction and LLM output.
-3. Persist Resume Builder data and add validation before PDF generation.
-4. Implement Interview Service endpoints for interview creation, answers, feedback, and final summary.
-5. Build the interview UI and roadmap workflow.
+### 📤 Authentication Flow
 
-## Tech used so far
+1. The frontend authenticates the user through Firebase Google Sign-in.
+2. Firebase generates an ID token.
+3. The client sends the token to `/api/auth/login`.
+4. The API Gateway forwards the request to the Auth Service.
+5. Firebase Admin verifies the ID token.
+6. The Auth Service creates or retrieves the user from MongoDB.
+7. A Redis-backed session is created and the session cookie is returned.
 
-React, Vite, Tailwind CSS, Motion, React Router, Redux Toolkit, React Redux, Recharts, react-to-print, Node.js, Express, MongoDB, Mongoose, Redis, Docker Compose, Firebase Admin SDK, Multer, pdf-parse, LangChain, Groq, dotenv, nodemon, and `express-http-proxy`.
+**Login request example:**
+
+```json
+{
+  "token": "firebase_id_token"
+}
+```
+
+### 📄 Resume Upload Flow
+
+Send an authenticated `multipart/form-data` request to:
+
+```text
+POST /api/resume/upload
+```
+
+Use the following field name:
+
+```text
+resume
+```
+
+The API Gateway forwards the authenticated user ID to the Resume Service for PDF processing, AI analysis, and storage.
+
+---
+
+## 🚧 Known Issues & Work in Progress
+
+The following areas still need attention:
+
+- [ ] Fix the logout controller by adding its missing `req` and `res` parameters.
+- [ ] Correct cookie options to `httpOnly` and `sameSite`; enable secure cookies in production.
+- [ ] Align the frontend Axios base URL (`http://localhost:8000`) with the API Gateway port (`6000`).
+- [ ] Add input validation, user-friendly authentication errors, and API tests.
+- [ ] Complete Roadmap Builder functionality.
+- [ ] Test Resume Scorer with invalid PDFs, failed uploads, and replacement analyses.
+- [ ] Add formal schema validation and automated tests for malformed LLM responses.
+- [ ] Persist Resume Builder form data in the backend.
+- [ ] Implement Interview Service controllers and route handlers.
+- [ ] Connect interview prompts and agents to interview creation, answer submission, feedback, and summary endpoints.
+
+---
+
+## 🛣️ Upcoming Development Roadmap
+
+The next development milestones are:
+
+| Priority | Task | Status |
+|---|---|---|
+| 1 | Align frontend API URL and test authentication flows | 🔄 Pending |
+| 2 | Add PDF extraction and AI response validation tests | 🔄 Pending |
+| 3 | Persist Resume Builder data in the backend | 🔄 Pending |
+| 4 | Implement Interview Service APIs | 🔄 Pending |
+| 5 | Develop AI-powered mock interview UI | 🔄 Pending |
+| 6 | Build Roadmap Builder workflow | 🔄 Pending |
+| 7 | Develop Billing Service | 📌 Planned |
+
+---
+
+## 🛠️ Tech Stack
+
+### 🎨 Frontend
+- React.js
+- Vite
+- Tailwind CSS
+- Motion
+- React Router
+- Redux Toolkit
+- React Redux
+- Recharts
+- react-to-print
+
+### ⚙️ Backend
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- Redis
+- Docker Compose
+- Multer
+- pdf-parse
+- express-http-proxy
+
+### 🤖 AI & Authentication
+- Groq API
+- LangChain
+- Firebase Authentication
+- Firebase Admin SDK
+
+### 🔧 Development Tools
+- Git & GitHub
+- Axios
+- dotenv
+- nodemon
+
+---
+
+## 🎯 Project Vision
+
+FresherAI aims to become a complete AI-powered interview preparation ecosystem where students can:
+
+- 📄 Build professional, ATS-friendly resumes.
+- 🎯 Analyze resumes and identify improvement areas.
+- 🤖 Practise personalized HR and technical interviews.
+- 🧠 Receive AI-powered answer evaluation.
+- 📊 Track interview performance and progress.
+- 🗺️ Follow personalized learning roadmaps.
+- 💡 Improve confidence before real-world interviews.
+
+---
+
+## 👨‍💻 Development Status
+
+**FresherAI is actively under development.**
+
+The authentication foundation, resume analysis workflow, and initial interview service architecture are in place. More features and complete AI interview workflows are being developed incrementally.
+
+<p align="center">
+  <b>🚀 Building smarter interview preparation, one feature at a time!</b>
+</p>
