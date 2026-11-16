@@ -26,6 +26,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useCoins } from "../../apis/user.api";
 import api from "../../utils/axios";
 import { setResume } from "../../redux/resumeSlice";
+import { startInterview } from "../../apis/interview.api";
 
 /* =========================================
    ANIMATION VARIANTS
@@ -305,58 +306,35 @@ const Step1Setup = ({ user, setUser, onStartInterview }) => {
 
   const canStart = Boolean(role.trim()) && resumeReady && !starting;
 
-//   const handleStartInterview = async () => {
-//     if (!role.trim()) {
-//       setStartError("Please enter your target role.");
-//       return;
-//     }
+const start=async()=>{
+  setStarting(true);
+  const response=await startInterview({
+       role,
+       type,
+       useResume,
+       resume
 
-//     if (useResume && !resume) {
-//       setStartError("Please upload a resume or turn off Use Resume.");
-//       return;
-//     }
+  });
 
-//     if (file) {
-//       setStartError("Please upload your selected resume first.");
-//       return;
-//     }
-
-//     const interviewConfig = {
-//       action: "start",
-//       role: role.trim(),
-//       type,
-//       useResume,
-//       resume: useResume ? resume : null,
-//       difficulty: "medium",
-//     };
-
-//     try {
-//       setStarting(true);
-//       setStartError("");
-
-//       // Parent can handle the backend/API workflow if supplied.
-//       if (typeof onStartInterview === "function") {
-//         await onStartInterview(interviewConfig);
-//       } else {
-//         // Default navigation passes the interview configuration.
-//         navigate("/interview", {
-//           state: interviewConfig,
-//         });
-//       }
-//     } catch (error) {
-//       console.error("Unable to start interview:", error);
-
-//       setStartError(
-//         error?.response?.data?.message ||
-//           error?.message ||
-//           "Unable to start the interview. Please try again.",
-//       );
-
-//       setStarting(false);
-//     }
-//   };
+  if(response){
+    const coinResponse = await useCoins({
+      coins: 50,
+      action: "start-interview",
+    });
 
 
+    if (typeof setUser === "function") {
+      setUser((prev) => ({
+        ...prev,
+        interviewCoin: coinResponse?.interviewCoin,
+      }));
+    }
+  }
+
+  setStarting(false);
+
+  navigate(`/interview/${response?.interviewId}`)
+}
 
 
   /* =========================================
@@ -1008,6 +986,7 @@ const Step1Setup = ({ user, setUser, onStartInterview }) => {
                 ================================= */}
                 <motion.button
                   type="button"
+                  onClick={start}
                 //   onClick={handleStartInterview}
                   disabled={!canStart}
                   whileHover={canStart ? { y: -3 } : {}}
