@@ -1,4 +1,3 @@
-
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiFileText,
@@ -56,7 +55,6 @@ const Sidebar = ({
   // Reusable sidebar content
   const renderSidebarContent = (expanded, isMobile = false) => (
     <div className="flex h-full w-full flex-col bg-white">
-
       {/* HEADER */}
       <div
         className={`relative flex h-[76px] shrink-0 items-center border-b border-slate-200/80 px-4 ${
@@ -203,9 +201,7 @@ const Sidebar = ({
                 {active && (
                   <motion.div
                     layoutId={
-                      isMobile
-                        ? "mobile-active-nav"
-                        : "desktop-active-nav"
+                      isMobile ? "mobile-active-nav" : "desktop-active-nav"
                     }
                     className="absolute bottom-2 left-0 top-2 w-1 rounded-r-full bg-indigo-600"
                   />
@@ -242,16 +238,13 @@ const Sidebar = ({
 
       {/* BOTTOM SECTION */}
       <div className="mt-auto shrink-0 border-t border-slate-200/80 p-3">
-
         {/* INTERVIEW COINS */}
         <motion.div
           onClick={() => navigate("/pricing")}
           whileHover={{ y: -2 }}
           whileTap={{ scale: 0.98 }}
           title={
-            !expanded
-              ? `Interview Coins: ${user?.interviewCoin ?? 0}`
-              : ""
+            !expanded ? `Interview Coins: ${user?.interviewCoin ?? 0}` : ""
           }
           className={`mb-4 flex cursor-pointer items-center rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/80 to-violet-50/80 p-3 transition hover:border-indigo-200 hover:shadow-md hover:shadow-indigo-100/60 ${
             expanded ? "gap-3" : "justify-center"
