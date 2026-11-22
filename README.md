@@ -79,8 +79,11 @@ The project foundation currently includes:
 - [x] Answer submission endpoint with per-answer feedback and progress tracking.
 - [x] Automatic final summary, score, strengths, weaknesses, and recommendations after the last answer.
 - [x] Authenticated interview retrieval by interview ID.
+- [x] Protected React routes for interview setup, interview room, and report pages.
+- [x] Interview setup UI for role, HR/technical type, and optional resume-based personalization.
+- [x] Interview-room UI with an AI avatar, webcam toggle, browser speech-recognition support, countdown timer, written-answer area, and Monaco code editor.
 
-> 🚧 **Note:** The backend interview workflow is available. The React interview experience, validation, interruption recovery, and automated tests are still under development.
+> 🚧 **Note:** The setup page can start an interview and the interview-room UI is available. Connecting answer submission, feedback display, completion navigation, and the final report page is still in progress.
 
 ---
 

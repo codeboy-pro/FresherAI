@@ -327,3 +327,44 @@ I implemented the first complete backend workflow for AI mock interviews. The au
 ### Current status and next implementation
 
 The backend endpoints are available, but the frontend interview screen is still pending. The next steps are to add request/schema validation, connect the React interview UI to these endpoints, handle interrupted interviews, and add automated tests for authorization, invalid payloads, and completed reports.
+
+## 2026-11-22 — Day 10: Mock-interview setup and interview-room UI
+
+### What I built
+
+I started the React client for the mock-interview workflow. Authenticated users now have routes for interview setup, the interview room, and a future report page. The setup screen lets the user choose a target role, select HR or technical interview mode, and optionally use an existing resume or upload a new one for personalized questions.
+
+After setup, the client calls the Interview Service start endpoint and navigates to the interview room. I built the first room UI with an AI video/avatar, user webcam toggle, browser speech-recognition support, countdown timer, question progress, written-answer area, and an optional Monaco code editor for coding answers.
+
+### Why separate setup from the interview room?
+
+Setup collects the information needed to generate relevant questions before the timed experience begins. The interview room can then focus on one question at a time, keep temporary UI state such as the timer and transcript, and later submit answers to the backend without mixing configuration with the active interview experience.
+
+### How the current client flow works
+
+1. The user opens `/interview`, selects a role and interview type, and chooses whether to use resume context.
+2. If resume context is needed, the user can select or upload a PDF through the existing resume pipeline.
+3. The client sends the configuration to `POST /api/interview/start`.
+4. The backend creates the interview and returns its ID and first question.
+5. The client navigates to `/interview/:id`, fetches the saved interview, and renders the interview-room UI.
+6. The user can type an answer, dictate through supported browser speech recognition, enable their camera preview, or add code to the answer.
+
+### Key concepts I learned
+
+- Route parameters such as `/interview/:id` identify a specific persisted interview.
+- `getUserMedia()` requests a local webcam stream; tracks must be stopped during cleanup to release the camera.
+- Browser speech recognition is optional and should have a fallback text area because support differs by browser.
+- A code editor can remain a modal sub-flow and append submitted code to the normal text answer.
+- Local UI state is useful for mic/camera state, timer, selected voice/avatar, and current typed answer; persisted interview progress belongs in the backend.
+
+### Current integration status
+
+The setup page is connected to interview creation and the client can load a saved interview. Answer submission, feedback rendering, question advancement, and the final report screen are still pending. The timer currently manages local display time and is not yet enforced by the backend.
+
+### Interview explanation
+
+“I began the frontend mock-interview experience by separating setup from the live interview room. The setup screen creates an authenticated interview with the selected role and type, while the room handles the timed interaction UI—camera, microphone, text response, and code editor. The backend already persists questions and feedback; my next task is to connect each answer submission and render the final report.”
+
+### Next learning / implementation
+
+Call the submit-answer API from the room, show per-question feedback and the next question, redirect completed interviews to a real report page, and test permission-denied, timer-expiry, and network-failure cases.

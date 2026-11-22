@@ -304,3 +304,6 @@ const Step2interview = ({ interviewData, user }) => {
 };
 
 export default Step2interview;
+
+
+//  http://localhost:5173/interview/6afb038f6e0c10e6c61eef74
