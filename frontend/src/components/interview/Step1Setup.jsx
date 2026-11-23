@@ -252,16 +252,22 @@ const Step1Setup = ({ user, setUser, onStartInterview }) => {
       setUploadSuccess(false);
 
       // Existing coin deduction logic
-      const coinResponse = await useCoins({
-        coins: 10,
-        action: "resume-scorer",
-      });
+      try{
+const coinResponse = await useCoins({
+  coins: 10,
+  action: "resume-scorer",
+});
 
-      if (typeof setUser === "function") {
-        setUser((prev) => ({
-          ...prev,
-          interviewCoin: coinResponse?.interviewCoin,
-        }));
+if (typeof setUser === "function") {
+  setUser((prev) => ({
+    ...prev,
+    interviewCoin: coinResponse?.interviewCoin,
+  }));
+}
+      }catch(error){
+              setUploading(false);
+                  alert("Failed to use coins. ");
+                  return;
       }
 
       const formData = new FormData();
@@ -316,18 +322,26 @@ const start=async()=>{
 
   });
 
-  if(response){
-    const coinResponse = await useCoins({
-      coins: 50,
-      action: "start-interview",
-    });
+  if (response) {
+    
 
+    // Existing coin deduction logic
+    try {
+      const coinResponse = await useCoins({
+        coins: 50,
+        action: "start-interview",
+      });
 
-    if (typeof setUser === "function") {
-      setUser((prev) => ({
-        ...prev,
-        interviewCoin: coinResponse?.interviewCoin,
-      }));
+      if (typeof setUser === "function") {
+        setUser((prev) => ({
+          ...prev,
+          interviewCoin: coinResponse?.interviewCoin,
+        }));
+      }
+    } catch (error) {
+      setStarting(false);
+      alert("Failed to use coins. ");
+      return;
     }
   }
 

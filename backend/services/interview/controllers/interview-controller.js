@@ -121,6 +121,7 @@ export const submitAnswer = async (req, res) => {
         success: true,
         completed: true,
         interview,
+        feedback: result.feedback,
       });
 
     }

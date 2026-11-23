@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import maleVideo from "../../assets/male-ai.mp4";
 import femaleVideo from "../../assets/female-ai.mp4";
 import { AnimatePresence, motion } from "framer-motion";
-import { FiCamera, FiCameraOff, FiClock, FiCode, FiMessageSquare, FiMic, FiMicOff } from "react-icons/fi";
+import { FiArrowRight, FiCamera, FiCameraOff, FiClock, FiCode, FiMessageSquare, FiMic, FiMicOff } from "react-icons/fi";
 import CodeEditor from "./CodeEditor";
 import Timer from "./Timer";
+import { submitAnswer } from "../../apis/interview.api";
+import { useNavigate } from "react-router-dom";
 const Step2interview = ({ interviewData, user }) => {
   // State
   const [question, setQuestion] = useState(interviewData.question);
@@ -54,6 +56,7 @@ const Step2interview = ({ interviewData, user }) => {
 
   const showMicOn = micOn && !isAIPlaying;
   const progress= ((currentIndex + 1)/interviewData.totalQuestions) * 100;
+  const navigate=useNavigate();
   // Speech recognition
   useEffect(() => {
     if (!("webkitSpeechRecognition" in window)) return;
@@ -149,6 +152,132 @@ const Step2interview = ({ interviewData, user }) => {
          const t=setInterval(()=>setTimeLeft((p)=>p-1),1000);
          return ()=>clearInterval(t);
   },[timeLeft,timerActive]);
+
+
+  useEffect(()=>{
+       const load=()=>{
+        const voices=window.speechSynthesis.getVoices();
+        if(!voices.length) return ;
+        const female=voices.find(v=>  /zira|samantha|female/i.test(v.name));
+        const male=voices.find(v=>  /david|mark|male/i.test(v.name));
+        if(female)  { setSelectedVoice(female); setVoiceGender("female");}
+        else if(male) { setSelectedVoice(male); setVoiceGender("male");}
+        else   { setSelectedVoice(voices[0]); setVoiceGender("female");}
+       }
+       load();
+       window.speechSynthesis.onvoiceschanged=load;
+  },[]);
+
+  const speakText = (text) =>
+    new Promise((resolve) => {
+      if (!window.speechSynthesis || !selectedVoice || !text?.trim()) {
+        resolve();
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+
+      setTimeout(() => {
+        const utter = new SpeechSynthesisUtterance(
+          text.replace(/,/g, ", ... ").replace(/\./g, ". ... "),
+        );
+        utter.voice = selectedVoice;
+        utter.rate = 0.92;
+        utter.pitch = 1.05;
+        utter.volume = 1;
+        utter.onstart = () => {
+          setIsAIPlaying(true);
+          stopMic();
+          aiVideoRef.current?.play();
+        };
+        utter.onend = () => {
+          aiVideoRef.current?.pause();
+          setIsAIPlaying(false);
+          if (micOn) startMic();
+          setTimeout(() => {
+            setSubtitle("");
+            resolve();
+          }, 300);
+        };
+        setSubtitle(text);
+        window.speechSynthesis.speak(utter);
+      }, 150);
+    });
+
+
+  useEffect(()=>{
+    if(!selectedVoice || introSpoken) return ;
+    const runIntro=async()=>{
+         setIntroSpoken(true);
+         await new Promise((r)=>setTimeout(r,1200));
+         await speakText(
+           `Welcome ${user?.name.split(" ")[0]}! Let's begin your interview.`,
+         );
+         await new Promise((r)=>setTimeout(r,900));
+
+         await speakText(interviewData.question.question);
+    }
+    runIntro();
+},[selectedVoice]);
+
+   useEffect(() => {
+     if (!selectedVoice || !introSpoken) return;
+     const speakQuestion = async () => {
+       await new Promise((r) => setTimeout(r, 900));
+       await speakText(question.question);
+     };
+     speakQuestion();
+   }, [question]);
+
+
+     useEffect(() => {
+       setQuestion(interviewData.question);
+       setCurrentIndex(interviewData.currentQuestion);
+       setTimeLeft(interviewData.question.timer || 60);
+     }, [interviewData]);
+
+  useEffect(() => {
+    setTimeLeft(question.timer || 60);
+    setTimerActive(true);
+  }, [question]);
+
+  const submit = async () => {
+    if (!answer.trim()) return;
+
+    setTimerActive(false);
+    setLoading(true);
+
+    const res = await submitAnswer({
+      interviewId: interviewData.interviewId,
+      answer,
+    });
+
+    if (res.completed) {
+      setFeedback(res.feedback);
+      await new Promise((r) => setTimeout(r, 700));
+      await speakText(
+        res.feedback?.feedback ||
+          "Great job! Your interview is complete. Preparing your report now.",
+      );
+      setLoading(false);
+      navigate(`/interview/${interviewData.interviewId}/report`);
+      return;
+    }
+
+    setFeedback(res.feedback);
+    await new Promise((r) => setTimeout(r, 700));
+    await speakText(
+      res.feedback?.feedback ||
+        "Noted your answer. Let's move to the next question.",
+    );
+    setLoading(false);
+    setQuestion(res.question);
+    setCurrentIndex(res.currentQuestion);
+    setAnswer("");
+    setFeedback(null);
+  };
+
+
 
   return (
     <div>
@@ -292,9 +421,44 @@ const Step2interview = ({ interviewData, user }) => {
       <label className="">Your answer</label>
        <textarea  onChange={(e)=>setAnswer(e.target.value)} value={answer}
        rows={5}
-       onKeyDown={(e)=>{ if(e.ctrlKey && e.key==="Enter") alert("Submit answer")}}
+       onKeyDown={(e)=>{ if(e.ctrlKey && e.key==="Enter") submit()}}
        placeholder="write your answer here... or speak if mic is on"/>
 
+
+          </div>
+{/* feedback  */}
+          <div>
+            <AnimatePresence>
+              {feedback &&  (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                 <p> AI Feedback</p>
+                 <p>{feedback.feedback}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+          </div>
+
+          <div>
+            <span>Press{" "}
+
+              <span>Ctrl+Enter</span> to Submit
+            </span>
+
+            <motion.button disabled={loading || !answer.trim()}
+            onClick={submit}
+            >
+                {
+                  loading ? (<>
+                  <div>Submitting...</div></>):(
+                    <>Submit Answer <FiArrowRight/></>
+                  )
+                }
+            </motion.button>
 
           </div>
         </div>
@@ -306,4 +470,6 @@ const Step2interview = ({ interviewData, user }) => {
 export default Step2interview;
 
 
-//  http://localhost:5173/interview/6afb038f6e0c10e6c61eef74
+
+// 9:51 
+// http://localhost:5173/interview/6afb038f6e0c10e6c61eef74 

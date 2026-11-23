@@ -7,7 +7,7 @@ const interviewRouter = express.Router();
 
 interviewRouter.post("/start",startInterview);
 
-interviewRouter.post("/submit", submitAnswer);
+interviewRouter.post("/answer", submitAnswer);
 
 
 interviewRouter.get("/:id",getInterview);
