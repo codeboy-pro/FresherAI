@@ -58,7 +58,7 @@ export const submitAnswer = async (req, res) => {
   try {
     const userId = req.headers["x-user-id"];
     const { interviewId, answer } = req.body;
-    if (!interviewId && !answer) {
+    if (!interviewId || !answer) {
       return res.status(400).json({
         success: false,
         message: "Interview ID and answer are required",
@@ -123,62 +123,51 @@ export const submitAnswer = async (req, res) => {
         interview,
         feedback: result.feedback,
       });
-
     }
-
-
 
     await interview.save();
 
-
     return res.status(200).json({
-        success: true,
-        completed: false,
-        currentQuestion: interview.currentQuestion,
-        question: interview.questions[interview.currentQuestion],
+      success: true,
+      completed: false,
+      currentQuestion: interview.currentQuestion,
+      question: interview.questions[interview.currentQuestion],
 
-        feedback: result.feedback,
+      feedback: result.feedback,
     });
-
-
-
-
   } catch (error) {
-
     console.error("Error submitting answer:", error);
 
     return res.status(500).json({
-        success: false,
-        message: error.message || "Failed to submit answer",
-    })
+      success: false,
+      message: error.message || "Failed to submit answer",
+    });
   }
 };
 
-
 export const getInterview = async (req, res) => {
-    try{
-      const userId=req.headers["x-user-id"];
-      const {id}=req.params;
+  try {
+    const userId = req.headers["x-user-id"];
+    const { id } = req.params;
 
-      const interview=await Interview.findOne({_id:id, userId});
-       if (!interview) {
-         return res.status(404).json({
-           success: false,
-           message: "Interview not found",
-         });
-       }
-
-       return res.status(200).json({
-          success:true,
-          interview,
-       });
-
-    }catch(error){
-console.error("Error submitting answer:", error);
-
-return res.status(500).json({
-  success: false,
-  message: error.message || "Failed to submit answer",
-});
+    const interview = await Interview.findOne({ _id: id, userId });
+    if (!interview) {
+      return res.status(404).json({
+        success: false,
+        message: "Interview not found",
+      });
     }
-}
+
+    return res.status(200).json({
+      success: true,
+      interview,
+    });
+  } catch (error) {
+    console.error("Error submitting answer:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to submit answer",
+    });
+  }
+};

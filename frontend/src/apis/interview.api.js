@@ -24,14 +24,17 @@ export const getInterview = async (id) => {
 };
 
 export const submitAnswer = async (data) => {
-   try {
-     const response = await api.post(`/api/interview/answer}`,data);
-     console.log("response", response.data);
+  try {
+    const response = await api.post(`/api/interview/answer`, data);
+    console.log("response", response.data);
 
-     return response?.data;
-   } catch (error) {
-     console.log("error", error);
+    return response?.data;
+  } catch (error) {
+    console.error("Answer submission failed:", error.response?.data || error);
 
-     return null;
-   }
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
 };
